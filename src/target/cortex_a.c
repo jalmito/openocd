@@ -47,6 +47,10 @@
 #include "config.h"
 #endif
 
+#ifndef DEBUG
+	#define DEBUG 1
+#endif
+
 #include "breakpoints.h"
 #include "cortex_a.h"
 #include "register.h"
@@ -3173,6 +3177,15 @@ static int cortex_r4_target_create(struct target *target, Jim_Interp *interp)
 	return cortex_a_init_arch_info(target, cortex_a, target->tap);
 }
 
+static int cortex_r5_target_create(struct target *target, Jim_Interp *interp)
+{
+	struct cortex_a_common *cortex_a = calloc(1, sizeof(struct cortex_a_common));
+
+	cortex_a->armv7a_common.is_armv7r = true;
+
+	return cortex_a_init_arch_info(target, cortex_a, target->tap);
+}
+
 static void cortex_a_deinit_target(struct target *target)
 {
 	struct cortex_a_common *cortex_a = target_to_cortex_a(target);
@@ -3189,6 +3202,9 @@ static int cortex_a_mmu(struct target *target, int *enabled)
 	struct armv7a_common *armv7a = target_to_armv7a(target);
 
 	if (target->state != TARGET_HALTED) {
+#ifdef DEBUG
+		LOG_ERROR("%d: taget not halted",target->state);
+#endif
 		LOG_ERROR("%s: target not halted", __func__);
 		return ERROR_TARGET_INVALID;
 	}
@@ -3549,6 +3565,85 @@ struct target_type cortexr4_target = {
 
 	.commands = cortex_r4_command_handlers,
 	.target_create = cortex_r4_target_create,
+	.init_target = cortex_a_init_target,
+	.examine = cortex_a_examine,
+	.deinit_target = cortex_a_deinit_target,
+};
+static const struct command_registration cortex_r5_exec_command_handlers[] = {
+	{
+		.name = "cache_info",
+		.handler = cortex_a_handle_cache_info_command,
+		.mode = COMMAND_EXEC,
+		.help = "display information about target caches",
+		.usage = "",
+	},
+	{
+		.name = "dbginit",
+		.handler = cortex_a_handle_dbginit_command,
+		.mode = COMMAND_EXEC,
+		.help = "Initialize core debug",
+		.usage = "",
+	},
+	{
+		.name = "maskisr",
+		.handler = handle_cortex_a_mask_interrupts_command,
+		.mode = COMMAND_EXEC,
+		.help = "mask cortex_r5 interrupts",
+		.usage = "['on'|'off']",
+	},
+
+	COMMAND_REGISTRATION_DONE
+};
+static const struct command_registration cortex_r5_command_handlers[] = {
+	{
+		.chain = arm_command_handlers,
+	},
+	{
+		.chain = armv7a_command_handlers,
+	},
+	{
+		.name = "cortex_r5",
+		.mode = COMMAND_ANY,
+		.help = "Cortex-R5 command group",
+		.usage = "",
+		.chain = cortex_r5_exec_command_handlers,
+	},
+	COMMAND_REGISTRATION_DONE
+};
+
+struct target_type cortexr5_target = {
+	.name = "cortex_r5",
+
+	.poll = cortex_a_poll,
+	.arch_state = armv7a_arch_state,
+
+	.halt = cortex_a_halt,
+	.resume = cortex_a_resume,
+	.step = cortex_a_step,
+
+	.assert_reset = cortex_a_assert_reset,
+	.deassert_reset = cortex_a_deassert_reset,
+
+	/* REVISIT allow exporting VFP3 registers ... */
+	.get_gdb_reg_list = arm_get_gdb_reg_list,
+
+	.read_memory = cortex_a_read_phys_memory,
+	.write_memory = cortex_a_write_phys_memory,
+
+	.checksum_memory = arm_checksum_memory,
+	.blank_check_memory = arm_blank_check_memory,
+
+	.run_algorithm = armv4_5_run_algorithm,
+
+	.add_breakpoint = cortex_a_add_breakpoint,
+	.add_context_breakpoint = cortex_a_add_context_breakpoint,
+	.add_hybrid_breakpoint = cortex_a_add_hybrid_breakpoint,
+	.remove_breakpoint = cortex_a_remove_breakpoint,
+	.add_watchpoint = NULL,
+	.remove_watchpoint = NULL,
+
+	.commands = cortex_r5_command_handlers,
+	.target_create = cortex_r5_target_create,
 	.init_target = cortex_a_init_target,
 	.examine = cortex_a_examine,
 	.deinit_target = cortex_a_deinit_target,
