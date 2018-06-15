@@ -17,7 +17,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -134,7 +136,6 @@ static inline uint32_t flash_address(struct flash_bank *bank, int sector, uint32
 static void cfi_command(struct flash_bank *bank, uint8_t cmd, uint8_t *cmd_buf)
 {
 	int i;
-	struct cfi_flash_bank *cfi_info = bank->driver_priv;
 
 	/* clear whole buffer, to ensure bits that exceed the bus_width
 	 * are set to zero
@@ -142,7 +143,7 @@ static void cfi_command(struct flash_bank *bank, uint8_t cmd, uint8_t *cmd_buf)
 	for (i = 0; i < CFI_MAX_BUS_WIDTH; i++)
 		cmd_buf[i] = 0;
 
-	if (cfi_info->endianness == TARGET_LITTLE_ENDIAN) {
+	if (bank->target->endianness == TARGET_LITTLE_ENDIAN) {
 		for (i = bank->bus_width; i > 0; i--)
 			*cmd_buf++ = (i & (bank->chip_width - 1)) ? 0x0 : cmd;
 	} else {
@@ -166,7 +167,6 @@ static int cfi_send_command(struct flash_bank *bank, uint8_t cmd, uint32_t addre
 static int cfi_query_u8(struct flash_bank *bank, int sector, uint32_t offset, uint8_t *val)
 {
 	struct target *target = bank->target;
-	struct cfi_flash_bank *cfi_info = bank->driver_priv;
 	uint8_t data[CFI_MAX_BUS_WIDTH];
 
 	int retval;
@@ -175,7 +175,7 @@ static int cfi_query_u8(struct flash_bank *bank, int sector, uint32_t offset, ui
 	if (retval != ERROR_OK)
 		return retval;
 
-	if (cfi_info->endianness == TARGET_LITTLE_ENDIAN)
+	if (bank->target->endianness == TARGET_LITTLE_ENDIAN)
 		*val = data[0];
 	else
 		*val = data[bank->bus_width - 1];
@@ -190,7 +190,6 @@ static int cfi_query_u8(struct flash_bank *bank, int sector, uint32_t offset, ui
 static int cfi_get_u8(struct flash_bank *bank, int sector, uint32_t offset, uint8_t *val)
 {
 	struct target *target = bank->target;
-	struct cfi_flash_bank *cfi_info = bank->driver_priv;
 	uint8_t data[CFI_MAX_BUS_WIDTH];
 	int i;
 
@@ -200,7 +199,7 @@ static int cfi_get_u8(struct flash_bank *bank, int sector, uint32_t offset, uint
 	if (retval != ERROR_OK)
 		return retval;
 
-	if (cfi_info->endianness == TARGET_LITTLE_ENDIAN) {
+	if (bank->target->endianness == TARGET_LITTLE_ENDIAN) {
 		for (i = 0; i < bank->bus_width / bank->chip_width; i++)
 			data[0] |= data[i];
 
@@ -237,7 +236,7 @@ static int cfi_query_u16(struct flash_bank *bank, int sector, uint32_t offset, u
 			return retval;
 	}
 
-	if (cfi_info->endianness == TARGET_LITTLE_ENDIAN)
+	if (bank->target->endianness == TARGET_LITTLE_ENDIAN)
 		*val = data[0] | data[bank->bus_width] << 8;
 	else
 		*val = data[bank->bus_width - 1] | data[(2 * bank->bus_width) - 1] << 8;
@@ -267,7 +266,7 @@ static int cfi_query_u32(struct flash_bank *bank, int sector, uint32_t offset, u
 			return retval;
 	}
 
-	if (cfi_info->endianness == TARGET_LITTLE_ENDIAN)
+	if (bank->target->endianness == TARGET_LITTLE_ENDIAN)
 		*val = data[0] | data[bank->bus_width] << 8 |
 			data[bank->bus_width * 2] << 16 | data[bank->bus_width * 3] << 24;
 	else
@@ -804,7 +803,6 @@ static int cfi_intel_info(struct flash_bank *bank, char *buf, int buf_size)
 FLASH_BANK_COMMAND_HANDLER(cfi_flash_bank_command)
 {
 	struct cfi_flash_bank *cfi_info;
-	int bus_swap = 0;
 
 	if (CMD_ARGC < 6)
 		return ERROR_COMMAND_SYNTAX_ERROR;
@@ -834,25 +832,13 @@ FLASH_BANK_COMMAND_HANDLER(cfi_flash_bank_command)
 	cfi_info->x16_as_x8 = 0;
 	cfi_info->jedec_probe = 0;
 	cfi_info->not_cfi = 0;
-	cfi_info->data_swap = 0;
 
 	for (unsigned i = 6; i < CMD_ARGC; i++) {
 		if (strcmp(CMD_ARGV[i], "x16_as_x8") == 0)
 			cfi_info->x16_as_x8 = 1;
-		else if (strcmp(CMD_ARGV[i], "data_swap") == 0)
-			cfi_info->data_swap = 1;
-		else if (strcmp(CMD_ARGV[i], "bus_swap") == 0)
-			bus_swap = 1;
 		else if (strcmp(CMD_ARGV[i], "jedec_probe") == 0)
 			cfi_info->jedec_probe = 1;
 	}
-
-	if (bus_swap)
-		cfi_info->endianness =
-			bank->target->endianness == TARGET_LITTLE_ENDIAN ?
-			TARGET_BIG_ENDIAN : TARGET_LITTLE_ENDIAN;
-	else
-		cfi_info->endianness = bank->target->endianness;
 
 	/* bank wasn't probed yet */
 	cfi_info->qry[0] = 0xff;
@@ -1227,7 +1213,7 @@ static int cfi_intel_write_block(struct flash_bank *bank, const uint8_t *buffer,
 		arm_algo.core_state = ARM_STATE_ARM;
 	} else {
 		LOG_ERROR("Unknown architecture");
-		return ERROR_TARGET_RESOURCE_NOT_AVAILABLE;
+		return ERROR_FAIL;
 	}
 
 	cfi_intel_clear_status_register(bank);
@@ -1276,6 +1262,7 @@ static int cfi_intel_write_block(struct flash_bank *bank, const uint8_t *buffer,
 		LOG_WARNING("No working area available, can't do block memory writes");
 		return ERROR_TARGET_RESOURCE_NOT_AVAILABLE;
 	}
+	;
 
 	/* write algorithm code to working area */
 	retval = target_write_buffer(target, write_algorithm->address,
@@ -1297,6 +1284,7 @@ static int cfi_intel_write_block(struct flash_bank *bank, const uint8_t *buffer,
 			goto cleanup;
 		}
 	}
+	;
 
 	/* setup algo registers */
 	init_reg_param(&reg_params[0], "r0", 32, PARAM_OUT);
@@ -1539,17 +1527,18 @@ static int cfi_spansion_write_block_mips(struct flash_bank *bank, const uint8_t 
 			return ERROR_TARGET_RESOURCE_NOT_AVAILABLE;
 		}
 	}
+	;
 
-	init_reg_param(&reg_params[0], "r4", 32, PARAM_OUT);
-	init_reg_param(&reg_params[1], "r5", 32, PARAM_OUT);
-	init_reg_param(&reg_params[2], "r6", 32, PARAM_OUT);
-	init_reg_param(&reg_params[3], "r7", 32, PARAM_OUT);
-	init_reg_param(&reg_params[4], "r8", 32, PARAM_OUT);
-	init_reg_param(&reg_params[5], "r9", 32, PARAM_IN);
-	init_reg_param(&reg_params[6], "r12", 32, PARAM_OUT);
-	init_reg_param(&reg_params[7], "r13", 32, PARAM_OUT);
-	init_reg_param(&reg_params[8], "r14", 32, PARAM_OUT);
-	init_reg_param(&reg_params[9], "r15", 32, PARAM_OUT);
+	init_reg_param(&reg_params[0], "a0", 32, PARAM_OUT);
+	init_reg_param(&reg_params[1], "a1", 32, PARAM_OUT);
+	init_reg_param(&reg_params[2], "a2", 32, PARAM_OUT);
+	init_reg_param(&reg_params[3], "a3", 32, PARAM_OUT);
+	init_reg_param(&reg_params[4], "t0", 32, PARAM_OUT);
+	init_reg_param(&reg_params[5], "t1", 32, PARAM_IN);
+	init_reg_param(&reg_params[6], "t4", 32, PARAM_OUT);
+	init_reg_param(&reg_params[7], "t5", 32, PARAM_OUT);
+	init_reg_param(&reg_params[8], "t6", 32, PARAM_OUT);
+	init_reg_param(&reg_params[9], "t7", 32, PARAM_OUT);
 
 	while (count > 0) {
 		uint32_t thisrun_count = (count > buffer_size) ? buffer_size : count;
@@ -1610,9 +1599,8 @@ static int cfi_spansion_write_block(struct flash_bank *bank, const uint8_t *buff
 	struct cfi_spansion_pri_ext *pri_ext = cfi_info->pri_ext;
 	struct target *target = bank->target;
 	struct reg_param reg_params[10];
-	void *arm_algo;
-	struct arm_algorithm armv4_5_algo;
-	struct armv7m_algorithm armv7m_algo;
+	struct arm_algorithm arm_algo;
+
 	struct working_area *write_algorithm;
 	struct working_area *source;
 	uint32_t buffer_size = 32768;
@@ -1811,18 +1799,17 @@ static int cfi_spansion_write_block(struct flash_bank *bank, const uint8_t *buff
 		return cfi_spansion_write_block_mips(bank, buffer, address, count);
 
 	if (is_armv7m(target_to_armv7m(target))) {	/* armv7m target */
-		armv7m_algo.common_magic = ARMV7M_COMMON_MAGIC;
-		armv7m_algo.core_mode = ARM_MODE_THREAD;
-		arm_algo = &armv7m_algo;
+		arm_algo.common_magic = ARMV7M_COMMON_MAGIC;
+		arm_algo.core_mode = ARM_MODE_THREAD;
+
 	} else if (is_arm(target_to_arm(target))) {
 		/* All other ARM CPUs have 32 bit instructions */
-		armv4_5_algo.common_magic = ARM_COMMON_MAGIC;
-		armv4_5_algo.core_mode = ARM_MODE_SVC;
-		armv4_5_algo.core_state = ARM_STATE_ARM;
-		arm_algo = &armv4_5_algo;
+		arm_algo.common_magic = ARM_COMMON_MAGIC;
+		arm_algo.core_mode = ARM_MODE_SVC;
+		arm_algo.core_state = ARM_STATE_ARM;
 	} else {
 		LOG_ERROR("Unknown architecture");
-		return ERROR_TARGET_RESOURCE_NOT_AVAILABLE;
+		return ERROR_FAIL;
 	}
 
 	int target_code_size = 0;
@@ -1918,6 +1905,7 @@ static int cfi_spansion_write_block(struct flash_bank *bank, const uint8_t *buff
 			return ERROR_TARGET_RESOURCE_NOT_AVAILABLE;
 		}
 	}
+	;
 
 	init_reg_param(&reg_params[0], "r0", 32, PARAM_OUT);
 	init_reg_param(&reg_params[1], "r1", 32, PARAM_OUT);
@@ -1950,7 +1938,7 @@ static int cfi_spansion_write_block(struct flash_bank *bank, const uint8_t *buff
 		retval = target_run_algorithm(target, 0, NULL, 10, reg_params,
 				write_algorithm->address,
 				write_algorithm->address + ((target_code_size) - 4),
-				10000, arm_algo);
+				10000, &arm_algo);
 		if (retval != ERROR_OK)
 			break;
 
@@ -1999,9 +1987,7 @@ static int cfi_intel_write_word(struct flash_bank *bank, uint8_t *word, uint32_t
 
 	uint8_t status;
 	retval = cfi_intel_wait_status_busy(bank, cfi_info->word_write_timeout, &status);
-	if (retval != ERROR_OK)
-		return retval;
-	if (status != 0x80) {
+	if (retval != 0x80) {
 		retval = cfi_send_command(bank, 0xff, flash_address(bank, 0, 0x0));
 		if (retval != ERROR_OK)
 			return retval;
@@ -2334,8 +2320,6 @@ static int cfi_write(struct flash_bank *bank, const uint8_t *buffer, uint32_t of
 	int blk_count;	/* number of bus_width bytes for block copy */
 	uint8_t current_word[CFI_MAX_BUS_WIDTH * 4];	/* word (bus_width size) currently being
 							 *programmed */
-	uint8_t *swapped_buffer = NULL;
-	const uint8_t *real_buffer = NULL;
 	int i;
 	int retval;
 
@@ -2362,35 +2346,13 @@ static int cfi_write(struct flash_bank *bank, const uint8_t *buffer, uint32_t of
 			return retval;
 
 		/* replace only bytes that must be written */
-		for (i = align;
-		     (i < bank->bus_width) && (count > 0);
-		     i++, count--)
-			if (cfi_info->data_swap)
-				/* data bytes are swapped (reverse endianness) */
-				current_word[bank->bus_width - i] = *buffer++;
-			else
-				current_word[i] = *buffer++;
+		for (i = align; (i < bank->bus_width) && (count > 0); i++, count--)
+			current_word[i] = *buffer++;
 
 		retval = cfi_write_word(bank, current_word, write_p);
 		if (retval != ERROR_OK)
 			return retval;
 		write_p += bank->bus_width;
-	}
-
-	if (cfi_info->data_swap && count) {
-		swapped_buffer = malloc(count & ~(bank->bus_width - 1));
-		switch (bank->bus_width) {
-		case 2:
-			buf_bswap16(swapped_buffer, buffer,
-				    count & ~(bank->bus_width - 1));
-			break;
-		case 4:
-			buf_bswap32(swapped_buffer, buffer,
-				    count & ~(bank->bus_width - 1));
-			break;
-		}
-		real_buffer = buffer;
-		buffer = swapped_buffer;
 	}
 
 	/* handle blocks of bus_size aligned bytes */
@@ -2462,11 +2424,6 @@ static int cfi_write(struct flash_bank *bank, const uint8_t *buffer, uint32_t of
 			return retval;
 	}
 
-	if (swapped_buffer) {
-		buffer = real_buffer + (buffer - swapped_buffer);
-		free(swapped_buffer);
-	}
-
 	/* return to read array mode, so we can read from flash again for padding */
 	retval = cfi_reset(bank);
 	if (retval != ERROR_OK)
@@ -2483,11 +2440,7 @@ static int cfi_write(struct flash_bank *bank, const uint8_t *buffer, uint32_t of
 
 		/* replace only bytes that must be written */
 		for (i = 0; (i < bank->bus_width) && (count > 0); i++, count--)
-			if (cfi_info->data_swap)
-				/* data bytes are swapped (reverse endianness) */
-				current_word[bank->bus_width - i] = *buffer++;
-			else
-				current_word[i] = *buffer++;
+			current_word[i] = *buffer++;
 
 		retval = cfi_write_word(bank, current_word, write_p);
 		if (retval != ERROR_OK)

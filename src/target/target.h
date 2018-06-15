@@ -25,13 +25,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_TARGET_TARGET_H
-#define OPENOCD_TARGET_TARGET_H
-
-#include <helper/list.h>
+#ifndef TARGET_H
+#define TARGET_H
 
 struct reg;
 struct trace;
@@ -129,9 +129,7 @@ struct target {
 	int target_number;					/* DO NOT USE!  field to be removed in 2010 */
 	struct jtag_tap *tap;				/* where on the jtag chain is this */
 	int32_t coreid;						/* which device on the TAP? */
-
-	/** Should we defer examine to later */
-	bool defer_examine;
+	char *variant;						/* what variant of this chip is it? */
 
 	/**
 	 * Indicates whether this target has been examined.
@@ -157,7 +155,7 @@ struct target {
 										 * upon first allocation from virtual/physical address. */
 	bool working_area_virt_spec;		/* virtual address specified? */
 	uint32_t working_area_virt;			/* virtual address */
-	bool working_area_phys_spec;		/* physical address specified? */
+	bool working_area_phys_spec;		/* virtual address specified? */
 	uint32_t working_area_phys;			/* physical address */
 	uint32_t working_area_size;			/* size in bytes */
 	uint32_t backup_working_area;		/* whether the content of the working area has to be preserved */
@@ -173,13 +171,12 @@ struct target {
 	struct debug_msg_receiver *dbgmsg;	/* list of debug message receivers */
 	uint32_t dbg_msg_enabled;			/* debug message status */
 	void *arch_info;					/* architecture specific information */
-	void *private_config;				/* pointer to target specific config data (for jim_configure hook) */
 	struct target *next;				/* next target in list */
 
 	int display;						/* display async info in telnet session. Do not display
 										 * lots of halted/resumed info when stepping in debugger. */
 	bool halt_issued;					/* did we transition to halted state? */
-	int64_t halt_issued_time;			/* Note time when halt was issued */
+	long long halt_issued_time;			/* Note time when halt was issued */
 
 	bool dbgbase_set;					/* By default the debug base is not set */
 	uint32_t dbgbase;					/* Really a Cortex-A specific option, but there is no
@@ -199,6 +196,8 @@ struct target {
 
 	/* file-I/O information for host to do syscall */
 	struct gdb_fileio_info *fileio_info;
+
+	void *algorithm_scratchpad;
 };
 
 struct target_list {
@@ -268,8 +267,6 @@ enum target_event {
 	TARGET_EVENT_GDB_FLASH_ERASE_END,
 	TARGET_EVENT_GDB_FLASH_WRITE_START,
 	TARGET_EVENT_GDB_FLASH_WRITE_END,
-
-	TARGET_EVENT_TRACE_CONFIG,
 };
 
 struct target_event_action {
@@ -288,23 +285,10 @@ struct target_event_callback {
 	struct target_event_callback *next;
 };
 
-struct target_reset_callback {
-	struct list_head list;
-	void *priv;
-	int (*callback)(struct target *target, enum target_reset_mode reset_mode, void *priv);
-};
-
-struct target_trace_callback {
-	struct list_head list;
-	void *priv;
-	int (*callback)(struct target *target, size_t len, uint8_t *data, void *priv);
-};
-
 struct target_timer_callback {
 	int (*callback)(void *priv);
 	int time_ms;
 	int periodic;
-	bool removed;
 	struct timeval when;
 	void *priv;
 	struct target_timer_callback *next;
@@ -320,24 +304,6 @@ int target_register_event_callback(
 int target_unregister_event_callback(
 		int (*callback)(struct target *target,
 		enum target_event event, void *priv),
-		void *priv);
-
-int target_register_reset_callback(
-		int (*callback)(struct target *target,
-		enum target_reset_mode reset_mode, void *priv),
-		void *priv);
-int target_unregister_reset_callback(
-		int (*callback)(struct target *target,
-		enum target_reset_mode reset_mode, void *priv),
-		void *priv);
-
-int target_register_trace_callback(
-		int (*callback)(struct target *target,
-		size_t len, uint8_t *data, void *priv),
-		void *priv);
-int target_unregister_trace_callback(
-		int (*callback)(struct target *target,
-		size_t len, uint8_t *data, void *priv),
 		void *priv);
 
 /* Poll the status of the target, detect any error conditions and report them.
@@ -357,8 +323,6 @@ int target_resume(struct target *target, int current, uint32_t address,
 		int handle_breakpoints, int debug_execution);
 int target_halt(struct target *target);
 int target_call_event_callbacks(struct target *target, enum target_event event);
-int target_call_reset_callbacks(struct target *target, enum target_reset_mode reset_mode);
-int target_call_trace_callbacks(struct target *target, size_t len, uint8_t *data);
 
 /**
  * The period is very approximate, the callback can happen much more often
@@ -374,7 +338,6 @@ int target_call_timer_callbacks(void);
  */
 int target_call_timer_callbacks_now(void);
 
-struct target *get_target_by_num(int num);
 struct target *get_current_target(struct command_context *cmd_ctx);
 struct target *get_target(const char *id);
 
@@ -508,6 +471,27 @@ int target_wait_algorithm(struct target *target,
 		uint32_t exit_point, int timeout_ms,
 		void *arch_info);
 
+
+/**
+ * Allocate a chunk of memory that algorithm can use as a scratchpad
+ * and save information needed to return @a target to its original
+ * state after execution is finished
+ *
+ * Function returns pointer to a memory allocated on success and NULL
+ * pointer on failure
+ */
+void *target_allocate_algorithm_scratchpad(struct target *target, size_t size);
+
+/**
+ * Free the memory allocated for algorithm scratchpad
+ */
+void target_free_algorithm_scratchpad(struct target *target);
+
+/**
+ * Get previously allocated scratchpad area
+ */
+void *target_get_algorithm_scratchpad(struct target *target);
+
 /**
  * This routine is a wrapper for asynchronous algorithms.
  *
@@ -583,7 +567,7 @@ int target_read_buffer(struct target *target,
 int target_checksum_memory(struct target *target,
 		uint32_t address, uint32_t size, uint32_t *crc);
 int target_blank_check_memory(struct target *target,
-		uint32_t address, uint32_t size, uint32_t *blank, uint8_t erased_value);
+		uint32_t address, uint32_t size, uint32_t *blank);
 int target_wait_state(struct target *target, enum target_state state, int ms);
 
 /**
@@ -604,12 +588,6 @@ int target_gdb_fileio_end(struct target *target, int retcode, int fileio_errno, 
 
 /** Return the *name* of this targets current state */
 const char *target_state_name(struct target *target);
-
-/** Return the *name* of a target event enumeration value */
-const char *target_event_name(enum target_event event);
-
-/** Return the *name* of a target reset reason enumeration value */
-const char *target_reset_mode_name(enum target_reset_mode reset_mode);
 
 /* DANGER!!!!!
  *
@@ -635,11 +613,6 @@ int target_alloc_working_area_try(struct target *target,
 int target_free_working_area(struct target *target, struct working_area *area);
 void target_free_all_working_areas(struct target *target);
 uint32_t target_get_working_area_avail(struct target *target);
-
-/**
- * Free all the resources allocated by targets and the target layer
- */
-void target_quit(void);
 
 extern struct target *all_targets;
 
@@ -668,6 +641,38 @@ int target_write_u32(struct target *target, uint32_t address, uint32_t value);
 int target_write_u16(struct target *target, uint32_t address, uint16_t value);
 int target_write_u8(struct target *target, uint32_t address, uint8_t value);
 
+/**
+ * Copies code to a working area.  This will allocate room for the code plus the
+ * additional amount requested if the working area pointer is null.
+ *
+ * @param target Pointer to the target to copy code to
+ * @param code Pointer to the code area to be copied
+ * @param code_size Size of the code being copied
+ * @param additional Size of the additional area to be allocated in addition to
+ *                   code
+ * @param area Pointer to a pointer to a working area to copy code to
+ * @return Success or failure of the operation
+ */
+int target_code_u8_to_working_area(struct target *target,
+				   const uint8_t *code, unsigned code_size,
+				   unsigned additional, struct working_area **area);
+
+/**
+ * Copies code to a working area.  This will allocate room for the code plus the
+ * additional amount requested if the working area pointer is null.
+ *
+ * @param target Pointer to the target to copy code to
+ * @param code Pointer to the code area to be copied
+ * @param code_size Size of the code being copied
+ * @param additional Size of the additional area to be allocated in addition to
+ *                   code
+ * @param area Pointer to a pointer to a working area to copy code to
+ * @return Success or failure of the operation
+ */
+int target_code_u32_to_working_area(struct target *target,
+				    const uint32_t *code, unsigned code_size,
+				    unsigned additional, struct working_area **area);
+
 /* Issues USER() statements with target state information */
 int target_arch_state(struct target *target);
 
@@ -687,4 +692,4 @@ void target_handle_event(struct target *t, enum target_event e);
 
 extern bool get_target_reset_nag(void);
 
-#endif /* OPENOCD_TARGET_TARGET_H */
+#endif /* TARGET_H */

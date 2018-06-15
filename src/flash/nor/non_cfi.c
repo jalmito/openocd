@@ -15,7 +15,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -31,7 +33,7 @@
 #define ERASE_REGION(num, size) (((size/256) << 16) | (num-1))
 
 /* non-CFI compatible flashes */
-static const struct non_cfi non_cfi_flashes[] = {
+static struct non_cfi non_cfi_flashes[] = {
 	{
 		.mfr = CFI_MFR_SST,
 		.id = 0xd4,
@@ -470,7 +472,7 @@ void cfi_fixup_non_cfi(struct flash_bank *bank)
 {
 	unsigned int mask;
 	struct cfi_flash_bank *cfi_info = bank->driver_priv;
-	const struct non_cfi *non_cfi = non_cfi_flashes;
+	struct non_cfi *non_cfi = non_cfi_flashes;
 
 	if (cfi_info->x16_as_x8)
 		mask = 0xFF;
@@ -537,6 +539,7 @@ void cfi_fixup_non_cfi(struct flash_bank *bank)
 		pri_ext->minor_version = '0';
 
 		pri_ext->SiliconRevision = 0x0;
+		pri_ext->EraseSuspend = 0x0;
 		pri_ext->EraseSuspend = 0x0;
 		pri_ext->BlkProt = 0x0;
 		pri_ext->TmpBlkUnprotect = 0x0;

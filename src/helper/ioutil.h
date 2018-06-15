@@ -12,14 +12,16 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_HELPER_IOUTIL_H
-#define OPENOCD_HELPER_IOUTIL_H
+#ifndef HELPER_IOUTILS_H
+#define HELPER_IOUTILS_H
 
 struct command_context;
 
 int ioutil_init(struct command_context *cmd_ctx);
 
-#endif /* OPENOCD_HELPER_IOUTIL_H */
+#endif	/* HELPER_IOUTILS_H */

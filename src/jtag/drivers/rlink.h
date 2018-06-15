@@ -13,11 +13,10 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
-
-#ifndef OPENOCD_JTAG_DRIVERS_RLINK_H
-#define OPENOCD_JTAG_DRIVERS_RLINK_H
 
 struct rlink_speed_table {
 	uint8_t const *dtc;
@@ -28,5 +27,3 @@ struct rlink_speed_table {
 
 extern const struct rlink_speed_table rlink_speed_table[];
 extern const size_t rlink_speed_table_size;
-
-#endif /* OPENOCD_JTAG_DRIVERS_RLINK_H */

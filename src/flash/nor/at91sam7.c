@@ -5,17 +5,19 @@
  *   Copyright (C) 2008 by Gheorghe Guran (atlas)                          *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
+ *   it under the terms of the GNU General public License as published by  *
  *   the Free Software Foundation; either version 2 of the License, or     *
  *   (at your option) any later version.                                   *
  *                                                                         *
  *   This program is distributed in the hope that it will be useful,       *
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
+ *   MERCHANTABILITY or FITNESS for A PARTICULAR PURPOSE.  See the         *
+ *   GNU General public License for more details.                          *
  *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   You should have received a copy of the GNU General public License     *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
 ****************************************************************************/
 
 /***************************************************************************
@@ -371,9 +373,10 @@ static int at91sam7_read_part_info(struct flash_bank *bank)
 
 	if (at91sam7_info->cidr != 0) {
 		/* flash already configured, update clock and check for protected sectors */
-		for (struct flash_bank *t_bank = bank; t_bank; t_bank = t_bank->next) {
-			if (t_bank->target != target)
-				continue;
+		struct flash_bank *fb = bank;
+		struct flash_bank *t_bank = bank;
+
+		while (t_bank) {
 			/* re-calculate master clock frequency */
 			at91sam7_read_clock_info(t_bank);
 
@@ -382,6 +385,9 @@ static int at91sam7_read_part_info(struct flash_bank *bank)
 
 			/* check protect state */
 			at91sam7_protect_check(t_bank);
+
+			t_bank = fb->next;
+			fb = t_bank;
 		}
 
 		return ERROR_OK;
@@ -396,10 +402,9 @@ static int at91sam7_read_part_info(struct flash_bank *bank)
 
 	if (at91sam7_info->flash_autodetection == 0) {
 		/* banks and sectors are already created, based on data from input file */
-		for (struct flash_bank *t_bank = bank; t_bank; t_bank = t_bank->next) {
-			if (t_bank->target != target)
-				continue;
-
+		struct flash_bank *fb = bank;
+		struct flash_bank *t_bank = bank;
+		while (t_bank) {
 			at91sam7_info = t_bank->driver_priv;
 
 			at91sam7_info->cidr = cidr;
@@ -420,6 +425,9 @@ static int at91sam7_read_part_info(struct flash_bank *bank)
 
 			/* check protect state */
 			at91sam7_protect_check(t_bank);
+
+			t_bank = fb->next;
+			fb = t_bank;
 		}
 
 		return ERROR_OK;
@@ -661,7 +669,7 @@ static int at91sam7_erase_check(struct flash_bank *bank)
 		retval = target_blank_check_memory(target,
 				bank->base + bank->sectors[nSector].offset,
 				bank->sectors[nSector].size,
-				&blank, bank->erased_value);
+				&blank);
 		if (retval != ERROR_OK) {
 			fast_check = 0;
 			break;

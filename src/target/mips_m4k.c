@@ -20,7 +20,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -55,37 +57,33 @@ static int mips_m4k_examine_debug_reason(struct target *target)
 	int retval;
 
 	if ((target->debug_reason != DBG_REASON_DBGRQ)
-			&& (target->debug_reason != DBG_REASON_SINGLESTEP)) {
-		if (ejtag_info->debug_caps & EJTAG_DCR_IB) {
-			/* get info about inst breakpoint support */
-			retval = target_read_u32(target,
-				ejtag_info->ejtag_ibs_addr, &break_status);
+		&& (target->debug_reason != DBG_REASON_SINGLESTEP)) {
+		/* get info about inst breakpoint support */
+		retval = target_read_u32(target,
+			ejtag_info->ejtag_ibs_addr, &break_status);
+		if (retval != ERROR_OK)
+			return retval;
+		if (break_status & 0x1f) {
+			/* we have halted on a  breakpoint */
+			retval = target_write_u32(target,
+				ejtag_info->ejtag_ibs_addr, 0);
 			if (retval != ERROR_OK)
 				return retval;
-			if (break_status & 0x1f) {
-				/* we have halted on a  breakpoint */
-				retval = target_write_u32(target,
-					ejtag_info->ejtag_ibs_addr, 0);
-				if (retval != ERROR_OK)
-					return retval;
-				target->debug_reason = DBG_REASON_BREAKPOINT;
-			}
+			target->debug_reason = DBG_REASON_BREAKPOINT;
 		}
 
-		if (ejtag_info->debug_caps & EJTAG_DCR_DB) {
-			/* get info about data breakpoint support */
-			retval = target_read_u32(target,
-				ejtag_info->ejtag_dbs_addr, &break_status);
+		/* get info about data breakpoint support */
+		retval = target_read_u32(target,
+			ejtag_info->ejtag_dbs_addr, &break_status);
+		if (retval != ERROR_OK)
+			return retval;
+		if (break_status & 0x1f) {
+			/* we have halted on a  breakpoint */
+			retval = target_write_u32(target,
+				ejtag_info->ejtag_dbs_addr, 0);
 			if (retval != ERROR_OK)
 				return retval;
-			if (break_status & 0x1f) {
-				/* we have halted on a  breakpoint */
-				retval = target_write_u32(target,
-					ejtag_info->ejtag_dbs_addr, 0);
-				if (retval != ERROR_OK)
-					return retval;
-				target->debug_reason = DBG_REASON_WATCHPOINT;
-			}
+			target->debug_reason = DBG_REASON_WATCHPOINT;
 		}
 	}
 
@@ -300,13 +298,6 @@ static int mips_m4k_assert_reset(struct target *target)
 	struct mips_m4k_common *mips_m4k = target_to_m4k(target);
 	struct mips_ejtag *ejtag_info = &mips_m4k->mips32.ejtag_info;
 
-	/* TODO: apply hw reset signal in not examined state */
-	if (!(target_was_examined(target))) {
-		LOG_WARNING("Reset is not asserted because the target is not examined.");
-		LOG_WARNING("Use a reset button or power cycle the target.");
-		return ERROR_TARGET_NOT_EXAMINED;
-	}
-
 	LOG_DEBUG("target->state: %s",
 		target_state_name(target));
 
@@ -323,15 +314,11 @@ static int mips_m4k_assert_reset(struct target *target)
 		srst_asserted = true;
 	}
 
-
-	/* EJTAG before v2.5/2.6 does not support EJTAGBOOT or NORMALBOOT */
-	if (ejtag_info->ejtag_version != EJTAG_VERSION_20) {
-		if (target->reset_halt) {
-			/* use hardware to catch reset */
-			mips_ejtag_set_instr(ejtag_info, EJTAG_INST_EJTAGBOOT);
-		} else
-			mips_ejtag_set_instr(ejtag_info, EJTAG_INST_NORMALBOOT);
-	}
+	if (target->reset_halt) {
+		/* use hardware to catch reset */
+		mips_ejtag_set_instr(ejtag_info, EJTAG_INST_EJTAGBOOT);
+	} else
+		mips_ejtag_set_instr(ejtag_info, EJTAG_INST_NORMALBOOT);
 
 	if (jtag_reset_config & RESET_HAS_SRST) {
 		/* here we should issue a srst only, but we may have to assert trst as well */
@@ -1339,7 +1326,7 @@ COMMAND_HANDLER(mips_m4k_handle_scan_delay_command)
 			return ERROR_COMMAND_SYNTAX_ERROR;
 
 	command_print(CMD_CTX, "scan delay: %d nsec", ejtag_info->scan_delay);
-	if (ejtag_info->scan_delay >= MIPS32_SCAN_DELAY_LEGACY_MODE) {
+	if (ejtag_info->scan_delay >= 20000000) {
 		ejtag_info->mode = 0;
 		command_print(CMD_CTX, "running in legacy mode");
 	} else {

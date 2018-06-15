@@ -19,11 +19,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_HELPER_FILEIO_H
-#define OPENOCD_HELPER_FILEIO_H
+#ifndef FILEIO_H
+#define FILEIO_H
 
 #define FILEIO_MAX_ERROR_STRING		(128)
 
@@ -41,10 +43,13 @@ enum fileio_access {
 	FILEIO_APPENDREAD,	/* open for writing, position at end, allow reading */
 };
 
-struct fileio;
+struct fileio {
+	/* The structure is opaque */
+	struct fileio_internal *fp;
+};
 
-int fileio_open(struct fileio **fileio, const char *url,
-		enum fileio_access access_type, enum fileio_type type);
+int fileio_open(struct fileio *fileio,
+		const char *url, enum fileio_access access_type, enum fileio_type type);
 int fileio_close(struct fileio *fileio);
 
 int fileio_seek(struct fileio *fileio, size_t position);
@@ -57,7 +62,7 @@ int fileio_write(struct fileio *fileio,
 
 int fileio_read_u32(struct fileio *fileio, uint32_t *data);
 int fileio_write_u32(struct fileio *fileio, uint32_t data);
-int fileio_size(struct fileio *fileio, size_t *size);
+int fileio_size(struct fileio *fileio, int *size);
 
 #define ERROR_FILEIO_LOCATION_UNKNOWN			(-1200)
 #define ERROR_FILEIO_NOT_FOUND					(-1201)
@@ -66,4 +71,4 @@ int fileio_size(struct fileio *fileio, size_t *size);
 #define ERROR_FILEIO_RESOURCE_TYPE_UNKNOWN		(-1204)
 #define ERROR_FILEIO_OPERATION_NOT_SUPPORTED	(-1205)
 
-#endif /* OPENOCD_HELPER_FILEIO_H */
+#endif	/* FILEIO_H */

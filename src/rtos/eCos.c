@@ -11,7 +11,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -35,10 +37,10 @@ static int eCos_get_symbol_list_to_lookup(symbol_table_elem_t *symbol_list[]);
 
 struct eCos_thread_state {
 	int value;
-	const char *desc;
+	char *desc;
 };
 
-static const struct eCos_thread_state eCos_thread_states[] = {
+struct eCos_thread_state eCos_thread_states[] = {
 	{ 0, "Ready" },
 	{ 1, "Sleeping" },
 	{ 2, "Countsleep" },
@@ -50,7 +52,7 @@ static const struct eCos_thread_state eCos_thread_states[] = {
 #define ECOS_NUM_STATES (sizeof(eCos_thread_states)/sizeof(struct eCos_thread_state))
 
 struct eCos_params {
-	const char *target_name;
+	char *target_name;
 	unsigned char pointer_width;
 	unsigned char thread_stack_offset;
 	unsigned char thread_name_offset;
@@ -60,7 +62,7 @@ struct eCos_params {
 	const struct rtos_register_stacking *stacking_info;
 };
 
-static const struct eCos_params eCos_params_list[] = {
+const struct eCos_params eCos_params_list[] = {
 	{
 	"cortex_m",			/* target_name */
 	4,						/* pointer_width; */
@@ -80,7 +82,7 @@ enum eCos_symbol_values {
 	eCos_VAL_current_thread_ptr = 1
 };
 
-static const char * const eCos_symbol_list[] = {
+static char *eCos_symbol_list[] = {
 	"Cyg_Thread::thread_list",
 	"Cyg_Scheduler_Base::current_thread",
 	NULL
@@ -172,6 +174,7 @@ static int eCos_update_threads(struct rtos *rtos)
 				sizeof(struct thread_detail) * thread_list_size);
 		rtos->thread_details->threadid = 1;
 		rtos->thread_details->exists = true;
+		rtos->thread_details->display_str = NULL;
 		rtos->thread_details->extra_info_str = NULL;
 		rtos->thread_details->thread_name_str = malloc(sizeof(tmp_str));
 		strcpy(rtos->thread_details->thread_name_str, tmp_str);
@@ -254,17 +257,19 @@ static int eCos_update_threads(struct rtos *rtos)
 			 */
 		}
 
-		const char *state_desc;
+		char *state_desc;
 		if  (i < ECOS_NUM_STATES)
 			state_desc = eCos_thread_states[i].desc;
 		else
 			state_desc = "Unknown state";
 
 		rtos->thread_details[tasks_found].extra_info_str = malloc(strlen(
-					state_desc)+8);
-		sprintf(rtos->thread_details[tasks_found].extra_info_str, "State: %s", state_desc);
+					state_desc)+1);
+		strcpy(rtos->thread_details[tasks_found].extra_info_str, state_desc);
 
 		rtos->thread_details[tasks_found].exists = true;
+
+		rtos->thread_details[tasks_found].display_str = NULL;
 
 		tasks_found++;
 		prev_thread_ptr = thread_index;
@@ -354,8 +359,8 @@ static int eCos_get_thread_reg_list(struct rtos *rtos, int64_t thread_id, char *
 static int eCos_get_symbol_list_to_lookup(symbol_table_elem_t *symbol_list[])
 {
 	unsigned int i;
-	*symbol_list = calloc(
-			ARRAY_SIZE(eCos_symbol_list), sizeof(symbol_table_elem_t));
+	*symbol_list = malloc(
+			sizeof(symbol_table_elem_t) * ARRAY_SIZE(eCos_symbol_list));
 
 	for (i = 0; i < ARRAY_SIZE(eCos_symbol_list); i++)
 		(*symbol_list)[i].symbol_name = eCos_symbol_list[i];

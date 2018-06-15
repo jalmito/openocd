@@ -13,7 +13,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1856,7 +1858,7 @@ static int aice_check_dbger(uint32_t coreid, uint32_t expect_status)
 		if ((i % 30) == 0)
 			keep_alive();
 
-		int64_t then = 0;
+		long long then = 0;
 		if (i == aice_count_to_check_dbger)
 			then = timeval_ms();
 		if (i >= aice_count_to_check_dbger) {
@@ -2097,7 +2099,7 @@ static int aice_usb_open(struct aice_port_param_s *param)
 	const uint16_t pids[] = { param->pid, 0 };
 	struct jtag_libusb_device_handle *devh;
 
-	if (jtag_libusb_open(vids, pids, NULL, &devh) != ERROR_OK)
+	if (jtag_libusb_open(vids, pids, &devh) != ERROR_OK)
 		return ERROR_FAIL;
 
 	/* BE ***VERY CAREFUL*** ABOUT MAKING CHANGES IN THIS
@@ -2121,7 +2123,7 @@ static int aice_usb_open(struct aice_port_param_s *param)
 	/* reopen jlink after usb_reset
 	 * on win32 this may take a second or two to re-enumerate */
 	int retval;
-	while ((retval = jtag_libusb_open(vids, pids, NULL, &devh)) != ERROR_OK) {
+	while ((retval = jtag_libusb_open(vids, pids, &devh)) != ERROR_OK) {
 		usleep(1000);
 		timeout--;
 		if (!timeout)
@@ -2134,11 +2136,13 @@ static int aice_usb_open(struct aice_port_param_s *param)
 #endif
 
 	/* usb_set_configuration required under win32 */
+	struct jtag_libusb_device *udev = jtag_libusb_get_device(devh);
 	jtag_libusb_set_configuration(devh, 0);
+	jtag_libusb_claim_interface(devh, 0);
 
 	unsigned int aice_read_ep;
 	unsigned int aice_write_ep;
-	jtag_libusb_choose_interface(devh, &aice_read_ep, &aice_write_ep, -1, -1, -1);
+	jtag_libusb_get_endpoints(udev, &aice_read_ep, &aice_write_ep);
 
 	aice_handler.usb_read_ep = aice_read_ep;
 	aice_handler.usb_write_ep = aice_write_ep;
@@ -2997,7 +3001,7 @@ static int aice_usb_step(uint32_t coreid)
 		if (AICE_TARGET_HALTED == state)
 			break;
 
-		int64_t then = 0;
+		long long then = 0;
 		if (i == 30)
 			then = timeval_ms();
 

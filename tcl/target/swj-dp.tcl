@@ -19,16 +19,12 @@
 # them more uniformly irlen too...)
 
 if [catch {transport select}] {
-  echo "Error: unable to select a session transport. Can't continue."
-  shutdown
+ echo "Info : session transport was not selected, defaulting to JTAG"
+ transport select jtag
 }
 
 proc swj_newdap {chip tag args} {
- if [using_hla] {
-     eval hla newtap $chip $tag $args
- } elseif [using_jtag] {
-     eval jtag newtap $chip $tag $args
- } elseif [using_swd] {
-     eval swd newdap $chip $tag $args
- }
+ if {[using_jtag]} { eval jtag newtap $chip $tag $args }
+ if {[using_swd]} { eval swd newdap $chip $tag $args }
+ if {[string equal [transport select] "cmsis-dap"]} { eval cmsis-dap newdap $chip $tag $args }
 }

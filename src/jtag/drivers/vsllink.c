@@ -12,7 +12,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
 /* Versaloon is a programming tool for multiple MCUs.
@@ -70,8 +72,10 @@ static void vsllink_tap_append_scan(int length, uint8_t *buffer,
 		struct scan_command *command);
 
 /* VSLLink SWD functions */
-static int_least32_t vsllink_swd_frequency(int_least32_t hz);
-static int vsllink_swd_switch_seq(enum swd_special_seq seq);
+static int_least32_t vsllink_swd_frequency(struct adiv5_dap *dap,
+		int_least32_t hz);
+static int vsllink_swd_switch_seq(struct adiv5_dap *dap,
+		enum swd_special_seq seq);
 
 /* VSLLink lowlevel functions */
 struct vsllink {
@@ -93,6 +97,7 @@ static uint8_t *tdi_buffer;
 static uint8_t *tdo_buffer;
 
 static bool swd_mode;
+static int queued_retval;
 
 static struct vsllink *vsllink_handle;
 
@@ -238,10 +243,8 @@ static int vsllink_execute_queue(void)
 
 static int vsllink_speed(int speed)
 {
-	if (swd_mode) {
-		vsllink_swd_frequency(speed * 1000);
+	if (swd_mode)
 		return ERROR_OK;
-	}
 
 	versaloon_interface.adaptors.jtag_raw.config(0, (uint16_t)speed);
 	return versaloon_interface.adaptors.peripheral_commit();
@@ -345,8 +348,8 @@ static int vsllink_init(void)
 		versaloon_interface.adaptors.gpio.config(0, GPIO_TRST, 0,
 			GPIO_TRST, GPIO_TRST);
 		versaloon_interface.adaptors.swd.init(0);
-		vsllink_swd_frequency(jtag_get_speed_khz() * 1000);
-		vsllink_swd_switch_seq(JTAG_TO_SWD);
+		vsllink_swd_frequency(NULL, jtag_get_speed_khz() * 1000);
+		vsllink_swd_switch_seq(NULL, JTAG_TO_SWD);
 
 	} else {
 		/* malloc buffer size for tap */
@@ -726,7 +729,8 @@ static int vsllink_swd_init(void)
 	return ERROR_OK;
 }
 
-static int_least32_t vsllink_swd_frequency(int_least32_t hz)
+static int_least32_t vsllink_swd_frequency(struct adiv5_dap *dap,
+		int_least32_t hz)
 {
 	const int_least32_t delay2hz[] = {
 		1850000, 235000, 130000, 102000, 85000, 72000
@@ -754,12 +758,14 @@ static int_least32_t vsllink_swd_frequency(int_least32_t hz)
 		LOG_DEBUG("SWD delay: %d, retry count: %d", delay, retry_count);
 
 		versaloon_interface.adaptors.swd.config(0, 2, retry_count, delay);
+		queued_retval = versaloon_interface.adaptors.peripheral_commit();
 	}
 
 	return hz;
 }
 
-static int vsllink_swd_switch_seq(enum swd_special_seq seq)
+static int vsllink_swd_switch_seq(struct adiv5_dap *dap,
+		enum swd_special_seq seq)
 {
 	switch (seq) {
 	case LINE_RESET:
@@ -782,22 +788,68 @@ static int vsllink_swd_switch_seq(enum swd_special_seq seq)
 		return ERROR_FAIL;
 	}
 
-	return ERROR_OK;
-}
-
-static void vsllink_swd_read_reg(uint8_t cmd, uint32_t *value, uint32_t ap_delay_clk)
-{
-	versaloon_interface.adaptors.swd.transact(0, cmd, value, NULL);
-}
-
-static void vsllink_swd_write_reg(uint8_t cmd, uint32_t value, uint32_t ap_delay_clk)
-{
-	versaloon_interface.adaptors.swd.transact(0, cmd, &value, NULL);
-}
-
-static int vsllink_swd_run_queue(void)
-{
 	return versaloon_interface.adaptors.peripheral_commit();
+}
+
+static void vsllink_swd_read_reg(struct adiv5_dap *dap, uint8_t cmd,
+		uint32_t *value)
+{
+	if (queued_retval != ERROR_OK)
+		return;
+
+	int retval;
+	uint32_t val = 0;
+	uint8_t ack;
+
+	versaloon_interface.adaptors.swd.transact(0, cmd, &val, &ack);
+	retval = versaloon_interface.adaptors.peripheral_commit();
+
+	if (retval != ERROR_OK) {
+		queued_retval = ERROR_FAIL;
+		return;
+	}
+
+	if (ack != 0x01) {
+		queued_retval = ack;
+		return;
+	}
+
+	if (value)
+		*value = val;
+
+	queued_retval = retval;
+}
+
+static void vsllink_swd_write_reg(struct adiv5_dap *dap, uint8_t cmd,
+		uint32_t value)
+{
+	if (queued_retval != ERROR_OK)
+		return;
+
+	int retval;
+	uint8_t ack;
+
+	versaloon_interface.adaptors.swd.transact(0, cmd, &value, &ack);
+	retval = versaloon_interface.adaptors.peripheral_commit();
+
+	if (retval != ERROR_OK) {
+		queued_retval = ERROR_FAIL;
+		return;
+	}
+
+	if (ack != 0x01) {
+		queued_retval = ack;
+		return;
+	}
+
+	queued_retval = retval;
+}
+
+static int vsllink_swd_run_queue(struct adiv5_dap *dap)
+{
+	int retval = queued_retval;
+	queued_retval = ERROR_OK;
+	return retval;
 }
 
 /****************************************************************************

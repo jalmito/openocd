@@ -12,11 +12,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_TARGET_AVR32_REGS_H
-#define OPENOCD_TARGET_AVR32_REGS_H
+#ifndef AVR32_REGS
+#define AVR32_REGS
 
 enum avr32_reg_nums {
 	AVR32_REG_R0 = 0,
@@ -41,4 +43,4 @@ enum avr32_reg_nums {
 int avr32_jtag_read_regs(struct avr32_jtag *jtag_info, uint32_t *regs);
 int avr32_jtag_write_regs(struct avr32_jtag *jtag_info, uint32_t *regs);
 
-#endif /* OPENOCD_TARGET_AVR32_REGS_H */
+#endif /* AVR32_REGS */

@@ -13,11 +13,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
+#ifndef __NDS32_INSN_H__
+#define __NDS32_INSN_H__
 
-#ifndef OPENOCD_TARGET_NDS32_INSN_H
-#define OPENOCD_TARGET_NDS32_INSN_H
 
 #define NOP						(0x40000009)
 #define DSB						(0x64000008)
@@ -75,4 +77,5 @@
 extern const int NDS32_BREAK_16;
 extern const int NDS32_BREAK_32;
 
-#endif /* OPENOCD_TARGET_NDS32_INSN_H */
+
+#endif /* __NDS32_INSN_H__ */

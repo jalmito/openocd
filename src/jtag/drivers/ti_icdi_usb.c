@@ -14,7 +14,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -242,8 +244,7 @@ static int icdi_send_remote_cmd(void *handle, const char *data)
 	struct icdi_usb_handle_s *h = handle;
 
 	size_t cmd_len = sprintf(h->write_buffer, PACKET_START "qRcmd,");
-	cmd_len += hexify(h->write_buffer + cmd_len, (const uint8_t *)data,
-		strlen(data), h->max_packet - cmd_len);
+	cmd_len += hexify(h->write_buffer + cmd_len, data, 0, h->max_packet - cmd_len);
 
 	return icdi_send_packet(handle, cmd_len);
 }
@@ -267,7 +268,7 @@ static int icdi_get_cmd_result(void *handle)
 
 	if (h->read_buffer[offset] == 'E') {
 		/* get error code */
-		uint8_t result;
+		char result;
 		if (unhexify(&result, h->read_buffer + offset + 1, 1) != 1)
 			return ERROR_FAIL;
 		return result;
@@ -329,7 +330,7 @@ static int icdi_usb_version(void *handle)
 	}
 
 	/* convert reply */
-	if (unhexify((uint8_t *)version, h->read_buffer + 2, 4) != 4) {
+	if (unhexify(version, h->read_buffer + 2, 4) != 4) {
 		LOG_WARNING("unable to get ICDI version");
 		return ERROR_OK;
 	}
@@ -496,7 +497,7 @@ static int icdi_usb_read_reg(void *handle, int num, uint32_t *val)
 
 	/* convert result */
 	uint8_t buf[4];
-	if (unhexify(buf, h->read_buffer + 2, 4) != 4) {
+	if (unhexify((char *)buf, h->read_buffer + 2, 4) != 4) {
 		LOG_ERROR("failed to convert result");
 		return ERROR_FAIL;
 	}
@@ -513,7 +514,7 @@ static int icdi_usb_write_reg(void *handle, int num, uint32_t val)
 	h_u32_to_le(buf, val);
 
 	int cmd_len = snprintf(cmd, sizeof(cmd), "P%x=", num);
-	hexify(cmd + cmd_len, buf, 4, sizeof(cmd));
+	hexify(cmd + cmd_len, (const char *)buf, 4, sizeof(cmd));
 
 	result = icdi_send_cmd(handle, cmd);
 	if (result != ERROR_OK)
@@ -644,17 +645,9 @@ static int icdi_usb_write_mem(void *handle, uint32_t addr, uint32_t size,
 	return retval;
 }
 
-static int icdi_usb_override_target(const char *targetname)
-{
-	return !strcmp(targetname, "cortex_m");
-}
-
 static int icdi_usb_close(void *handle)
 {
 	struct icdi_usb_handle_s *h = handle;
-
-	if (!h)
-		return ERROR_OK;
 
 	if (h->usb_dev)
 		libusb_close(h->usb_dev);
@@ -777,7 +770,5 @@ struct hl_layout_api_s icdi_usb_layout_api = {
 	.write_reg = icdi_usb_write_reg,
 	.read_mem = icdi_usb_read_mem,
 	.write_mem = icdi_usb_write_mem,
-	.write_debug_reg = icdi_usb_write_debug_reg,
-	.override_target = icdi_usb_override_target,
-	.custom_command = icdi_send_remote_cmd,
+	.write_debug_reg = icdi_usb_write_debug_reg
 };

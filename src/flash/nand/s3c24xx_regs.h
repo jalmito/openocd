@@ -13,15 +13,17 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
 /*
  * S3C2410 NAND register definitions
  */
 
-#ifndef OPENOCD_FLASH_NAND_S3C24XX_REGS_H
-#define OPENOCD_FLASH_NAND_S3C24XX_REGS_H
+#ifndef __ASM_ARM_REGS_NAND
+#define __ASM_ARM_REGS_NAND
 
 #define S3C2410_NFREG(x) (x)
 
@@ -126,4 +128,5 @@
 #define S3C2412_NFECCERR_MULTIBIT	(2)
 #define S3C2412_NFECCERR_ECCAREA	(3)
 
-#endif /* OPENOCD_FLASH_NAND_S3C24XX_REGS_H */
+#endif /* __ASM_ARM_REGS_NAND */
+

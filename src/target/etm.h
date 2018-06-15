@@ -16,11 +16,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_TARGET_ETM_H
-#define OPENOCD_TARGET_ETM_H
+#ifndef ETM_H
+#define ETM_H
 
 #include "trace.h"
 #include "arm_jtag.h"
@@ -70,7 +72,7 @@ enum {
 };
 
 struct etm_reg {
-	uint8_t value[4];
+	uint32_t value;
 	const struct etm_reg_info *reg_info;
 	struct arm_jtag *jtag_info;
 };
@@ -221,4 +223,4 @@ extern const struct command_registration etm_command_handlers[];
 #define ERROR_ETM_CAPTURE_INIT_FAILED	(-1302)
 #define ERROR_ETM_ANALYSIS_FAILED	(-1303)
 
-#endif /* OPENOCD_TARGET_ETM_H */
+#endif /* ETM_H */

@@ -16,7 +16,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -57,13 +59,7 @@ static int jim_newtap_expected_id(Jim_Nvp *n, Jim_GetOptInfo *goi,
 	return JIM_OK;
 }
 
-#define NTAP_OPT_IRLEN     0
-#define NTAP_OPT_IRMASK    1
-#define NTAP_OPT_IRCAPTURE 2
-#define NTAP_OPT_ENABLED   3
-#define NTAP_OPT_DISABLED  4
-#define NTAP_OPT_EXPECTED_ID 5
-#define NTAP_OPT_VERSION   6
+#define NTAP_OPT_EXPECTED_ID 0
 
 static int jim_hl_newtap_cmd(Jim_GetOptInfo *goi)
 {
@@ -73,14 +69,8 @@ static int jim_hl_newtap_cmd(Jim_GetOptInfo *goi)
 	Jim_Nvp *n;
 	char *cp;
 	const Jim_Nvp opts[] = {
-		{ .name = "-irlen",       .value = NTAP_OPT_IRLEN },
-		{ .name = "-irmask",       .value = NTAP_OPT_IRMASK },
-		{ .name = "-ircapture",       .value = NTAP_OPT_IRCAPTURE },
-		{ .name = "-enable",       .value = NTAP_OPT_ENABLED },
-		{ .name = "-disable",       .value = NTAP_OPT_DISABLED },
-		{ .name = "-expected-id",       .value = NTAP_OPT_EXPECTED_ID },
-		{ .name = "-ignore-version",       .value = NTAP_OPT_VERSION },
-		{ .name = NULL, .value = -1},
+		{.name = "-expected-id", .value = NTAP_OPT_EXPECTED_ID},
+		{.name = NULL, .value = -1},
 	};
 
 	pTap = calloc(1, sizeof(struct jtag_tap));
@@ -98,13 +88,11 @@ static int jim_hl_newtap_cmd(Jim_GetOptInfo *goi)
 		free(pTap);
 		return JIM_ERR;
 	}
+	Jim_GetOpt_String(goi, &cp, NULL);
+	pTap->chip = strdup(cp);
 
-	const char *tmp;
-	Jim_GetOpt_String(goi, &tmp, NULL);
-	pTap->chip = strdup(tmp);
-
-	Jim_GetOpt_String(goi, &tmp, NULL);
-	pTap->tapname = strdup(tmp);
+	Jim_GetOpt_String(goi, &cp, NULL);
+	pTap->tapname = strdup(cp);
 
 	/* name + dot + name + null */
 	x = strlen(pTap->chip) + 1 + strlen(pTap->tapname) + 1;
@@ -132,12 +120,6 @@ static int jim_hl_newtap_cmd(Jim_GetOptInfo *goi)
 				free(pTap);
 				return e;
 			}
-			break;
-		case NTAP_OPT_IRLEN:
-		case NTAP_OPT_IRMASK:
-		case NTAP_OPT_IRCAPTURE:
-			/* dummy read to ignore the next argument */
-			Jim_GetOpt_Wide(goi, NULL);
 			break;
 		}		/* switch (n->value) */
 	}			/* while (goi->argc) */

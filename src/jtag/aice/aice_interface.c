@@ -13,7 +13,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -29,7 +31,7 @@
 #include "aice_usb.h"
 
 #define AICE_KHZ_TO_SPEED_MAP_SIZE	16
-static const int aice_khz_to_speed_map[AICE_KHZ_TO_SPEED_MAP_SIZE] = {
+static int aice_khz_to_speed_map[AICE_KHZ_TO_SPEED_MAP_SIZE] = {
 	30000,
 	15000,
 	7500,

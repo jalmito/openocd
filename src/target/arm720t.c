@@ -16,7 +16,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -56,7 +58,7 @@ static int arm720t_scan_cp15(struct target *target,
 	retval = arm_jtag_scann(jtag_info, 0xf, TAP_DRPAUSE);
 	if (retval != ERROR_OK)
 		return retval;
-	retval = arm_jtag_set_instr(jtag_info->tap, jtag_info->intest_instr, NULL, TAP_DRPAUSE);
+	retval = arm_jtag_set_instr(jtag_info, jtag_info->intest_instr, NULL, TAP_DRPAUSE);
 	if (retval != ERROR_OK)
 		return retval;
 
@@ -336,7 +338,7 @@ static int arm720t_soft_reset_halt(struct target *target)
 	if (retval != ERROR_OK)
 		return retval;
 
-	int64_t then = timeval_ms();
+	long long then = timeval_ms();
 	int timeout;
 	while (!(timeout = ((timeval_ms()-then) > 1000))) {
 		if (buf_get_u32(dbg_stat->value, EICE_DBG_STATUS_DBGACK, 1) == 0) {

@@ -16,7 +16,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -27,12 +29,12 @@
 #include <helper/log.h>
 #include "breakpoints.h"
 
-static const char * const breakpoint_type_strings[] = {
+static char *breakpoint_type_strings[] = {
 	"hardware",
 	"software"
 };
 
-static const char * const watchpoint_rw_strings[] = {
+static char *watchpoint_rw_strings[] = {
 	"read",
 	"write",
 	"access"
@@ -48,7 +50,7 @@ int breakpoint_add_internal(struct target *target,
 {
 	struct breakpoint *breakpoint = target->breakpoints;
 	struct breakpoint **breakpoint_p = &target->breakpoints;
-	const char *reason;
+	char *reason;
 	int retval;
 	int n;
 
@@ -394,7 +396,7 @@ int watchpoint_add(struct target *target, uint32_t address, uint32_t length,
 	struct watchpoint *watchpoint = target->watchpoints;
 	struct watchpoint **watchpoint_p = &target->watchpoints;
 	int retval;
-	const char *reason;
+	char *reason;
 
 	while (watchpoint) {
 		if (watchpoint->address == address) {
@@ -403,7 +405,7 @@ int watchpoint_add(struct target *target, uint32_t address, uint32_t length,
 				|| watchpoint->mask != mask
 				|| watchpoint->rw != rw) {
 				LOG_ERROR("address 0x%8.8" PRIx32
-					" already has watchpoint %d",
+					"already has watchpoint %d",
 					address, watchpoint->unique_id);
 				return ERROR_FAIL;
 			}

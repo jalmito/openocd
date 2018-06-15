@@ -22,7 +22,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -119,7 +121,7 @@ static int command_retval_set(Jim_Interp *interp, int retval)
 	if (return_retval != NULL)
 		*return_retval = retval;
 
-	return (retval == ERROR_OK) ? JIM_OK : retval;
+	return (retval == ERROR_OK) ? JIM_OK : JIM_ERR;
 }
 
 extern struct command_context *global_cmd_ctx;
@@ -657,7 +659,21 @@ int command_run_line(struct command_context *context, char *line)
 		}
 		Jim_DeleteAssocData(interp, "context");
 	}
-	if (retcode == JIM_OK) {
+	if (retcode == JIM_ERR) {
+		if (retval != ERROR_COMMAND_CLOSE_CONNECTION) {
+			/* We do not print the connection closed error message */
+			Jim_MakeErrorMessage(interp);
+			LOG_USER("%s", Jim_GetString(Jim_GetResult(interp), NULL));
+		}
+		if (retval == ERROR_OK) {
+			/* It wasn't a low level OpenOCD command that failed */
+			return ERROR_FAIL;
+		}
+		return retval;
+	} else if (retcode == JIM_EXIT) {
+		/* ignore.
+		 * exit(Jim_GetExitCode(interp)); */
+	} else {
 		const char *result;
 		int reslen;
 
@@ -677,22 +693,7 @@ int command_run_line(struct command_context *context, char *line)
 			LOG_USER_N("\n");
 		}
 		retval = ERROR_OK;
-	} else if (retcode == JIM_EXIT) {
-		/* ignore.
-		 * exit(Jim_GetExitCode(interp)); */
-	} else if (retcode == ERROR_COMMAND_CLOSE_CONNECTION) {
-		return retcode;
-	} else {
-		Jim_MakeErrorMessage(interp);
-		LOG_USER("%s", Jim_GetString(Jim_GetResult(interp), NULL));
-
-		if (retval == ERROR_OK) {
-			/* It wasn't a low level OpenOCD command that failed */
-			return ERROR_FAIL;
-		}
-		return retval;
 	}
-
 	return retval;
 }
 
@@ -1069,10 +1070,8 @@ static int jim_command_type(Jim_Interp *interp, int argc, Jim_Obj *const *argv)
 		Jim_SetResultString(interp, "native", -1);
 	else if (c->handler)
 		Jim_SetResultString(interp, "simple", -1);
-	else if (remaining == 0)
-		Jim_SetResultString(interp, "group", -1);
 	else
-		Jim_SetResultString(interp, "unknown", -1);
+		Jim_SetResultString(interp, "group", -1);
 
 	return JIM_OK;
 }
@@ -1173,8 +1172,8 @@ COMMAND_HANDLER(handle_sleep_command)
 		return retval;
 
 	if (!busy) {
-		int64_t then = timeval_ms();
-		while (timeval_ms() - then < (int64_t)duration) {
+		long long then = timeval_ms();
+		while (timeval_ms() - then < (long long)duration) {
 			target_call_timer_callbacks_now();
 			usleep(1000);
 		}

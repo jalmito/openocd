@@ -14,7 +14,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -35,40 +37,9 @@ static bool jtag_libusb_match(struct jtag_libusb_device *dev,
 	return false;
 }
 
-/* Returns true if the string descriptor indexed by str_index in device matches string */
-static bool string_descriptor_equal(usb_dev_handle *device, uint8_t str_index,
-									const char *string)
-{
-	int retval;
-	bool matched;
-	char desc_string[256+1]; /* Max size of string descriptor */
-
-	if (str_index == 0)
-		return false;
-
-	retval = usb_get_string_simple(device, str_index,
-			desc_string, sizeof(desc_string)-1);
-	if (retval < 0) {
-		LOG_ERROR("usb_get_string_simple() failed with %d", retval);
-		return false;
-	}
-
-	/* Null terminate descriptor string in case it needs to be logged. */
-	desc_string[sizeof(desc_string)-1] = '\0';
-
-	matched = strncmp(string, desc_string, sizeof(desc_string)) == 0;
-	if (!matched)
-		LOG_DEBUG("Device serial number '%s' doesn't match requested serial '%s'",
-			desc_string, string);
-	return matched;
-}
-
 int jtag_libusb_open(const uint16_t vids[], const uint16_t pids[],
-		const char *serial,
 		struct jtag_libusb_device_handle **out)
 {
-	int retval = -ENODEV;
-	struct jtag_libusb_device_handle *libusb_handle;
 	usb_init();
 
 	usb_find_busses();
@@ -81,24 +52,13 @@ int jtag_libusb_open(const uint16_t vids[], const uint16_t pids[],
 			if (!jtag_libusb_match(dev, vids, pids))
 				continue;
 
-			libusb_handle = usb_open(dev);
-			if (NULL == libusb_handle) {
-				retval = -errno;
-				continue;
-			}
-
-			/* Device must be open to use libusb_get_string_descriptor_ascii. */
-			if (serial != NULL &&
-					!string_descriptor_equal(libusb_handle, dev->descriptor.iSerialNumber, serial)) {
-				usb_close(libusb_handle);
-				continue;
-			}
-			*out = libusb_handle;
-			retval = 0;
-			break;
+			*out = usb_open(dev);
+			if (NULL == *out)
+				return -errno;
+			return 0;
 		}
 	}
-	return retval;
+	return -ENODEV;
 }
 
 void jtag_libusb_close(jtag_libusb_device_handle *dev)
@@ -143,23 +103,14 @@ int jtag_libusb_set_configuration(jtag_libusb_device_handle *devh,
 			udev->config[configuration].bConfigurationValue);
 }
 
-int jtag_libusb_choose_interface(struct jtag_libusb_device_handle *devh,
+int jtag_libusb_get_endpoints(struct jtag_libusb_device *udev,
 		unsigned int *usb_read_ep,
-		unsigned int *usb_write_ep,
-		int bclass, int subclass, int protocol)
+		unsigned int *usb_write_ep)
 {
-	struct jtag_libusb_device *udev = jtag_libusb_get_device(devh);
 	struct usb_interface *iface = udev->config->interface;
 	struct usb_interface_descriptor *desc = iface->altsetting;
 
-	*usb_read_ep = *usb_write_ep = 0;
-
 	for (int i = 0; i < desc->bNumEndpoints; i++) {
-		if ((bclass > 0 && desc->bInterfaceClass != bclass) ||
-		    (subclass > 0 && desc->bInterfaceSubClass != subclass) ||
-		    (protocol > 0 && desc->bInterfaceProtocol != protocol))
-			continue;
-
 		uint8_t epnum = desc->endpoint[i].bEndpointAddress;
 		bool is_input = epnum & 0x80;
 		LOG_DEBUG("usb ep %s %02x", is_input ? "in" : "out", epnum);
@@ -167,22 +118,20 @@ int jtag_libusb_choose_interface(struct jtag_libusb_device_handle *devh,
 			*usb_read_ep = epnum;
 		else
 			*usb_write_ep = epnum;
-
-		if (*usb_read_ep && *usb_write_ep) {
-			LOG_DEBUG("Claiming interface %d", (int)desc->bInterfaceNumber);
-			usb_claim_interface(devh, (int)desc->bInterfaceNumber);
-			return ERROR_OK;
-		}
 	}
 
-	return ERROR_FAIL;
+	return 0;
 }
 
 int jtag_libusb_get_pid(struct jtag_libusb_device *dev, uint16_t *pid)
 {
-	if (!dev)
-		return ERROR_FAIL;
+	struct libusb_device_descriptor dev_desc;
 
-	*pid = dev->descriptor.idProduct;
-	return ERROR_OK;
+	if (libusb_get_device_descriptor(dev, &dev_desc) == 0) {
+		*pid = dev_desc.idProduct;
+
+		return 0;
+	}
+
+	return -ENODEV;
 }

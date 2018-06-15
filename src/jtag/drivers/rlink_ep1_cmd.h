@@ -13,11 +13,10 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
-
-#ifndef OPENOCD_JTAG_DRIVERS_RLINK_EP1_CMD_H
-#define OPENOCD_JTAG_DRIVERS_RLINK_EP1_CMD_H
 
 /*
  * Command opcodes that can be sent over endpoint 1.
@@ -56,5 +55,3 @@
 #define EP1_CMD_MEMORY_WRITE			(0x29)
 #define EP1_CMD_GET_FWREV				(0xfe)
 #define EP1_CMD_GET_SERIAL				(0xff)
-
-#endif /* OPENOCD_JTAG_DRIVERS_RLINK_EP1_CMD_H */

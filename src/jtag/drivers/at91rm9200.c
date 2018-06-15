@@ -13,7 +13,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -77,7 +79,7 @@
 #define P31	(1 << 31)
 
 struct device_t {
-	const char *name;
+	char *name;
 	int TDO_PIO;	/* PIO holding TDO */
 	uint32_t TDO_MASK;	/* TDO bitmask */
 	int TRST_PIO;	/* PIO holding TRST */
@@ -92,7 +94,7 @@ struct device_t {
 	uint32_t SRST_MASK;	/* SRST bitmask */
 };
 
-static const struct device_t devices[] = {
+static struct device_t devices[] = {
 	{ "rea_ecr", PIOD, P27, PIOA, NC, PIOD, P23, PIOD, P24, PIOD, P26, PIOC, P5 },
 	{ .name = NULL },
 };
@@ -102,7 +104,7 @@ static char *at91rm9200_device;
 
 /* interface variables
  */
-static const struct device_t *device;
+static struct device_t *device;
 static int dev_mem_fd;
 static void *sys_controller;
 static uint32_t *pio_base;
@@ -194,7 +196,7 @@ struct jtag_interface at91rm9200_interface = {
 
 static int at91rm9200_init(void)
 {
-	const struct device_t *cur_device;
+	struct device_t *cur_device;
 
 	cur_device = devices;
 

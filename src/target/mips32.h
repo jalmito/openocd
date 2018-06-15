@@ -18,11 +18,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_TARGET_MIPS32_H
-#define OPENOCD_TARGET_MIPS32_H
+#ifndef MIPS32_H
+#define MIPS32_H
 
 #include "target.h"
 #include "mips32_pracc.h"
@@ -61,12 +63,9 @@
 #define MIPS32_ARCH_REL1 0x0
 #define MIPS32_ARCH_REL2 0x1
 
-#define MIPS32_SCAN_DELAY_LEGACY_MODE 2000000
-
 /* offsets into mips32 core register cache */
 enum {
 	MIPS32_PC = 37,
-	MIPS32_FIR = 71,
 	MIPS32NUMCOREREGS
 };
 
@@ -101,8 +100,8 @@ struct mips32_common {
 	struct mips32_comparator *data_break_list;
 
 	/* register cache to processor synchronization */
-	int (*read_core_reg)(struct target *target, unsigned int num);
-	int (*write_core_reg)(struct target *target, unsigned int num);
+	int (*read_core_reg)(struct target *target, int num);
+	int (*write_core_reg)(struct target *target, int num);
 };
 
 static inline struct mips32_common *
@@ -204,7 +203,7 @@ struct mips32_algorithm {
 #define MIPS32_SYNCI_STEP	0x1	/* reg num od address step size to be used with synci instruction */
 
 /**
- * Cache operations definitions
+ * Cache operations definietions
  * Operation field is 5 bits long :
  * 1) bits 1..0 hold cache type
  * 2) bits 4..2 hold operation code
@@ -249,6 +248,6 @@ int mips32_get_gdb_reg_list(struct target *target,
 int mips32_checksum_memory(struct target *target, uint32_t address,
 		uint32_t count, uint32_t *checksum);
 int mips32_blank_check_memory(struct target *target,
-		uint32_t address, uint32_t count, uint32_t *blank, uint8_t erased_value);
+		uint32_t address, uint32_t count, uint32_t *blank);
 
-#endif /* OPENOCD_TARGET_MIPS32_H */
+#endif	/*MIPS32_H*/

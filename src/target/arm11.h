@@ -15,11 +15,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_TARGET_ARM11_H
-#define OPENOCD_TARGET_ARM11_H
+#ifndef ARM11_H
+#define ARM11_H
 
 #include "arm.h"
 #include "arm_dpm.h"
@@ -111,4 +113,4 @@ enum arm11_sc7 {
 	ARM11_SC7_WCR0                          = 112,
 };
 
-#endif /* OPENOCD_TARGET_ARM11_H */
+#endif	/* ARM11_H */

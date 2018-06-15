@@ -19,11 +19,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_TARGET_CORTEX_M_H
-#define OPENOCD_TARGET_CORTEX_M_H
+#ifndef CORTEX_M_H
+#define CORTEX_M_H
 
 #include "armv7m.h"
 
@@ -31,11 +33,10 @@
 
 #define SYSTEM_CONTROL_BASE 0x400FE000
 
-#define ITM_TER0	0xE0000E00
+#define ITM_TER		0xE0000E00
 #define ITM_TPR		0xE0000E40
 #define ITM_TCR		0xE0000E80
 #define ITM_LAR		0xE0000FB0
-#define ITM_LAR_KEY	0xC5ACCE55
 
 #define CPUID		0xE000ED00
 /* Debug Control Block */
@@ -68,13 +69,13 @@
 #define FPU_FPCAR	0xE000EF38
 #define FPU_FPDSCR	0xE000EF3C
 
-#define TPIU_SSPSR	0xE0040000
-#define TPIU_CSPSR	0xE0040004
-#define TPIU_ACPR	0xE0040010
-#define TPIU_SPPR	0xE00400F0
-#define TPIU_FFSR	0xE0040300
-#define TPIU_FFCR	0xE0040304
-#define TPIU_FSCR	0xE0040308
+#define TPI_SSPSR	0xE0040000
+#define TPI_CSPSR	0xE0040004
+#define TPI_ACPR	0xE0040010
+#define TPI_SPPR	0xE00400F0
+#define TPI_FFSR	0xE0040300
+#define TPI_FFCR	0xE0040304
+#define TPI_FSCR	0xE0040308
 
 /* DCB_DHCSR bit and field definitions */
 #define DBGKEY		(0xA05F << 16)
@@ -162,6 +163,7 @@ enum cortex_m_isrmasking_mode {
 
 struct cortex_m_common {
 	int common_magic;
+	struct arm_jtag jtag_info;
 
 	/* Context information */
 	uint32_t dcb_dhcsr;
@@ -172,7 +174,6 @@ struct cortex_m_common {
 	int fp_num_lit;
 	int fp_num_code;
 	int fp_code_available;
-	int fp_rev;
 	int fpb_enabled;
 	int auto_bp_type;
 	struct cortex_m_fp_comparator *fp_comparator_list;
@@ -188,8 +189,6 @@ struct cortex_m_common {
 	enum cortex_m_isrmasking_mode isrmasking_mode;
 
 	struct armv7m_common armv7m;
-
-	int apsel;
 };
 
 static inline struct cortex_m_common *
@@ -211,6 +210,5 @@ int cortex_m_remove_watchpoint(struct target *target, struct watchpoint *watchpo
 void cortex_m_enable_breakpoints(struct target *target);
 void cortex_m_enable_watchpoints(struct target *target);
 void cortex_m_dwt_setup(struct cortex_m_common *cm, struct target *target);
-void cortex_m_deinit_target(struct target *target);
 
-#endif /* OPENOCD_TARGET_CORTEX_M_H */
+#endif /* CORTEX_M_H */

@@ -13,11 +13,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_RTOS_RTOS_EMBKERNEL_STACKINGS_H
-#define OPENOCD_RTOS_RTOS_EMBKERNEL_STACKINGS_H
+#ifndef INCLUDED_RTOS_EMBKERNEL_STACKINGS_H_
+#define INCLUDED_RTOS_EMBKERNEL_STACKINGS_H_
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -27,4 +29,4 @@
 
 extern const struct rtos_register_stacking rtos_embkernel_Cortex_M_stacking;
 
-#endif /* OPENOCD_RTOS_RTOS_EMBKERNEL_STACKINGS_H */
+#endif	/* ifndef INCLUDED_RTOS_EMBKERNEL_STACKINGS_H_ */

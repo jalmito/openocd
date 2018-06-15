@@ -19,11 +19,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_TARGET_IMAGE_H
-#define OPENOCD_TARGET_IMAGE_H
+#ifndef IMAGE_H
+#define IMAGE_H
 
 #include <helper/fileio.h>
 
@@ -64,11 +66,11 @@ struct image {
 };
 
 struct image_binary {
-	struct fileio *fileio;
+	struct fileio fileio;
 };
 
 struct image_ihex {
-	struct fileio *fileio;
+	struct fileio fileio;
 	uint8_t *buffer;
 };
 
@@ -79,7 +81,7 @@ struct image_memory {
 };
 
 struct image_elf {
-	struct fileio *fileio;
+	struct fileio fileio;
 	Elf32_Ehdr *header;
 	Elf32_Phdr *segments;
 	uint32_t segment_count;
@@ -87,7 +89,7 @@ struct image_elf {
 };
 
 struct image_mot {
-	struct fileio *fileio;
+	struct fileio fileio;
 	uint8_t *buffer;
 };
 
@@ -107,4 +109,4 @@ int image_calculate_checksum(uint8_t *buffer, uint32_t nbytes,
 #define ERROR_IMAGE_TEMPORARILY_UNAVAILABLE		(-1402)
 #define ERROR_IMAGE_CHECKSUM		(-1403)
 
-#endif /* OPENOCD_TARGET_IMAGE_H */
+#endif /* IMAGE_H */

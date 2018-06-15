@@ -13,11 +13,12 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
-
-#ifndef OPENOCD_JTAG_AICE_AICE_PIPE_H
-#define OPENOCD_JTAG_AICE_AICE_PIPE_H
+#ifndef _AICE_PIPE_H_
+#define _AICE_PIPE_H_
 
 #include <helper/types.h>
 
@@ -28,4 +29,4 @@
 
 extern struct aice_port_api_s aice_pipe;
 
-#endif /* OPENOCD_JTAG_AICE_AICE_PIPE_H */
+#endif

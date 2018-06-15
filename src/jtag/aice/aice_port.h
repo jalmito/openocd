@@ -13,11 +13,12 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
-
-#ifndef OPENOCD_JTAG_AICE_AICE_PORT_H
-#define OPENOCD_JTAG_AICE_AICE_PORT_H
+#ifndef _AICE_PORT_H_
+#define _AICE_PORT_H_
 
 #include <target/nds32_edm.h>
 
@@ -105,9 +106,9 @@ enum aice_command_mode {
 
 struct aice_port_param_s {
 	/** */
-	const char *device_desc;
+	char *device_desc;
 	/** */
-	const char *serial;
+	char *serial;
 	/** */
 	uint16_t vid;
 	/** */
@@ -224,7 +225,7 @@ struct aice_port_api_s {
 /** */
 struct aice_port {
 	/** */
-	const char *name;
+	char *name;
 	/** */
 	int type;
 	/** */
@@ -234,4 +235,4 @@ struct aice_port {
 /** */
 const struct aice_port *aice_port_get_list(void);
 
-#endif /* OPENOCD_JTAG_AICE_AICE_PORT_H */
+#endif

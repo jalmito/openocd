@@ -20,9 +20,6 @@
  *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *   GNU General Public License for more details.
  *
- *   You should have received a copy of the GNU General Public License
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
  */
 
 /*
@@ -147,8 +144,11 @@ struct drvs_map {
 };
 
 static struct drvs_map lowlevel_drivers_map[] = {
-#if BUILD_USB_BLASTER
+#if BUILD_USB_BLASTER_LIBFTDI
 	{ .name = "ftdi", .drv_register = ublast_register_ftdi },
+#endif
+#if BUILD_USB_BLASTER_FTD2XX
+	{ .name = "ftd2xx", .drv_register = ublast_register_ftd2xx },
 #endif
 #if BUILD_USB_BLASTER_2
 	{ .name = "ublast2", .drv_register = ublast2_register_libusb },
@@ -756,40 +756,10 @@ static void ublast_usleep(int us)
 	jtag_sleep(us);
 }
 
-static void ublast_initial_wipeout(void)
-{
-	static uint8_t tms_reset = 0xff;
-	uint8_t out_value;
-	uint32_t retlen;
-	int i;
-
-	out_value = ublast_build_out(SCAN_OUT);
-	for (i = 0; i < BUF_LEN; i++)
-		info.buf[i] = out_value | ((i % 2) ? TCK : 0);
-
-	/*
-	 * Flush USB-Blaster queue fifos
-	 *  - empty the write FIFO (128 bytes)
-	 *  - empty the read FIFO (384 bytes)
-	 */
-	ublast_buf_write(info.buf, BUF_LEN, &retlen);
-	/*
-	 * Put JTAG in RESET state (five 1 on TMS)
-	 */
-	ublast_tms_seq(&tms_reset, 5);
-	tap_set_state(TAP_RESET);
-}
-
 static int ublast_execute_queue(void)
 {
 	struct jtag_command *cmd;
-	static int first_call = 1;
 	int ret = ERROR_OK;
-
-	if (first_call) {
-		first_call--;
-		ublast_initial_wipeout();
-	}
 
 	for (cmd = jtag_command_queue; ret == ERROR_OK && cmd != NULL;
 	     cmd = cmd->next) {
@@ -831,12 +801,14 @@ static int ublast_execute_queue(void)
  *
  * Initialize the device :
  *  - open the USB device
- *  - pretend it's initialized while actual init is delayed until first jtag command
+ *  - empty the write FIFO (128 bytes)
+ *  - empty the read FIFO (384 bytes)
  *
  * Returns ERROR_OK if USB device found, error if not.
  */
 static int ublast_init(void)
 {
+	static uint8_t tms_reset = 0xff;
 	int ret, i;
 
 	if (info.lowlevel_name) {
@@ -874,13 +846,18 @@ static int ublast_init(void)
 	info.flags |= info.drv->flags;
 
 	ret = info.drv->open(info.drv);
-
-	/*
-	 * Let lie here : the TAP is in an unknown state, but the first
-	 * execute_queue() will trigger a ublast_initial_wipeout(), which will
-	 * put the TAP in RESET.
-	 */
-	tap_set_state(TAP_RESET);
+	if (ret == ERROR_OK) {
+		/*
+		 * Flush USB-Blaster queue fifos
+		 */
+		uint32_t retlen;
+		ublast_buf_write(info.buf, BUF_LEN, &retlen);
+		/*
+		 * Put JTAG in RESET state (five 1 on TMS)
+		 */
+		ublast_tms_seq(&tms_reset, 5);
+		tap_set_state(TAP_RESET);
+	}
 	return ret;
 }
 
@@ -1045,8 +1022,8 @@ static const struct command_registration ublast_command_handlers[] = {
 		.name = "usb_blaster_lowlevel_driver",
 		.handler = ublast_handle_lowlevel_drv_command,
 		.mode = COMMAND_CONFIG,
-		.help = "set the lowlevel access for the USB Blaster (ftdi, ublast2)",
-		.usage = "(ftdi|ublast2)",
+		.help = "set the lowlevel access for the USB Blaster (ftdi, ftd2xx, ublast2)",
+		.usage = "(ftdi|ftd2xx|ublast2)",
 	},
 	{
 		.name = "usb_blaster_pin",

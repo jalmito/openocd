@@ -1,72 +1,86 @@
-noinst_LTLIBRARIES += %D%/libjtag.la
+include $(top_srcdir)/common.mk
 
-JTAG_SRCS =
-%C%_libjtag_la_LIBADD =
+METASOURCES = AUTO
+noinst_LTLIBRARIES = libjtag.la
 
-BUILT_SOURCES += %D%/minidriver_imp.h
-CLEANFILES += %D%/minidriver_imp.h
+SUBDIRS =
+DRIVERFILES =
+libjtag_la_LIBADD =
+
+CLEANFILES =
+
+BUILT_SOURCES =
+
+BUILT_SOURCES += minidriver_imp.h
+CLEANFILES += minidriver_imp.h
 
 if MINIDRIVER
 
 if ZY1000
-JTAG_SRCS += %D%/zy1000/zy1000.c
-JTAG_MINIDRIVER_DIR = %D%/zy1000
+DRIVERFILES += zy1000/zy1000.c
+JTAG_MINIDRIVER_DIR = $(srcdir)/zy1000
 endif
 if MINIDRIVER_DUMMY
-JTAG_SRCS += %D%/minidummy/minidummy.c %D%/commands.c
-JTAG_MINIDRIVER_DIR = %D%/minidummy
+DRIVERFILES += minidummy/minidummy.c commands.c
+JTAG_MINIDRIVER_DIR = $(srcdir)/minidummy
 endif
 
-MINIDRIVER_IMP_DIR = %D%/minidriver
+MINIDRIVER_IMP_DIR = $(srcdir)/minidriver
 
-%D%/jtag_minidriver.h: $(JTAG_MINIDRIVER_DIR)/jtag_minidriver.h
+jtag_minidriver.h: $(JTAG_MINIDRIVER_DIR)/jtag_minidriver.h
 	cp $< $@
 
-BUILT_SOURCES += %D%/jtag_minidriver.h
+BUILT_SOURCES += jtag_minidriver.h
 
-CLEANFILES += %D%/jtag_minidriver.h
+CLEANFILES += jtag_minidriver.h
 
 else
 
-MINIDRIVER_IMP_DIR = %D%/drivers
-JTAG_SRCS += %D%/commands.c
+MINIDRIVER_IMP_DIR = $(srcdir)/drivers
+DRIVERFILES += commands.c
 
 if HLADAPTER
-include %D%/hla/Makefile.am
-%C%_libjtag_la_LIBADD += $(top_builddir)/%D%/hla/libocdhla.la
+SUBDIRS += hla
+libjtag_la_LIBADD += $(top_builddir)/src/jtag/hla/libocdhla.la
 endif
 
 if AICE
-include %D%/aice/Makefile.am
-%C%_libjtag_la_LIBADD += $(top_builddir)/%D%/aice/libocdaice.la
+SUBDIRS += aice
+libjtag_la_LIBADD += $(top_builddir)/src/jtag/aice/libocdaice.la
 endif
 
-include %D%/drivers/Makefile.am
-%C%_libjtag_la_LIBADD += $(top_builddir)/%D%/drivers/libocdjtagdrivers.la
+SUBDIRS += drivers
+libjtag_la_LIBADD += $(top_builddir)/src/jtag/drivers/libocdjtagdrivers.la
+
 
 endif
+
 # endif // MINIDRIVER
 
-%D%/minidriver_imp.h: $(MINIDRIVER_IMP_DIR)/minidriver_imp.h
+minidriver_imp.h: $(MINIDRIVER_IMP_DIR)/minidriver_imp.h
 	cp $< $@
 
 
-%C%_libjtag_la_SOURCES = \
-	%D%/adapter.c \
-	%D%/core.c \
-	%D%/interface.c \
-	%D%/interfaces.c \
-	%D%/tcl.c \
-	%D%/commands.h \
-	%D%/driver.h \
-	%D%/interface.h \
-	%D%/interfaces.h \
-	%D%/minidriver.h \
-	%D%/jtag.h \
-	%D%/minidriver/minidriver_imp.h \
-	%D%/minidummy/jtag_minidriver.h \
-	%D%/swd.h \
-	%D%/tcl.h \
-	$(JTAG_SRCS)
+libjtag_la_SOURCES = \
+	adapter.c \
+	core.c \
+	interface.c \
+	interfaces.c \
+	tcl.c \
+	$(DRIVERFILES)
 
-STARTUP_TCL_SRCS += %D%/startup.tcl
+noinst_HEADERS = \
+	commands.h \
+	driver.h \
+	interface.h \
+	interfaces.h \
+	minidriver.h \
+	jtag.h \
+	minidriver/minidriver_imp.h \
+	minidummy/jtag_minidriver.h \
+	swd.h \
+	tcl.h
+
+EXTRA_DIST = startup.tcl
+
+MAINTAINERCLEANFILES = $(srcdir)/Makefile.in

@@ -14,11 +14,12 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
-
-#ifndef OPENOCD_JTAG_DRIVERS_MINIDRIVER_IMP_H
-#define OPENOCD_JTAG_DRIVERS_MINIDRIVER_IMP_H
+#ifndef MINIDRIVER_IMP_H
+#define MINIDRIVER_IMP_H
 
 #include <jtag/commands.h>
 
@@ -38,4 +39,4 @@ void jtag_add_callback4(jtag_callback_t f, jtag_callback_data_t data0,
 			jtag_callback_data_t data1, jtag_callback_data_t data2,
 			jtag_callback_data_t data3);
 
-#endif /* OPENOCD_JTAG_DRIVERS_MINIDRIVER_IMP_H */
+#endif	/* MINIDRIVER_IMP_H */

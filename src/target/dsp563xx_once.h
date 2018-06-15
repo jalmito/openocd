@@ -13,11 +13,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_TARGET_DSP563XX_ONCE_H
-#define OPENOCD_TARGET_DSP563XX_ONCE_H
+#ifndef DSP563XX_ONCE_H
+#define DSP563XX_ONCE_H
 
 #include <jtag/jtag.h>
 
@@ -61,9 +63,9 @@
 #define DSP563XX_ONCE_NOREG	0x01F	/* no register selected */
 
 struct once_reg {
-	const uint8_t num;
-	const uint8_t addr;
-	const uint8_t len;
+	uint8_t num;
+	uint8_t addr;
+	uint8_t len;
 	const char *name;
 	uint32_t reg;
 };
@@ -86,4 +88,4 @@ int dsp563xx_once_execute_sw_ir(struct jtag_tap *tap, int flush, uint32_t opcode
 /** double word instruction */
 int dsp563xx_once_execute_dw_ir(struct jtag_tap *tap, int flush, uint32_t opcode, uint32_t operand);
 
-#endif /* OPENOCD_TARGET_DSP563XX_ONCE_H */
+#endif /* DSP563XX_ONCE_H */

@@ -16,11 +16,13 @@
 *   GNU General Public License for more details.                          *
 *                                                                         *
 *   You should have received a copy of the GNU General Public License     *
-*   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+*   along with this program; if not, write to the                         *
+*   Free Software Foundation, Inc.,                                       *
+*   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
 ***************************************************************************/
 
-#ifndef OPENOCD_JTAG_JTAG_H
-#define OPENOCD_JTAG_JTAG_H
+#ifndef JTAG_H
+#define JTAG_H
 
 #include <helper/binarybuffer.h>
 #include <helper/log.h>
@@ -105,7 +107,7 @@ extern tap_state_t cmd_queue_cur_state;
  * jtag_add_dr_scan_check() to validate the value that was scanned out.
  */
 struct scan_field {
-	/** The number of bits this field specifies */
+	/** The number of bits this field specifies (up to 32) */
 	int num_bits;
 	/** A pointer to value to be scanned into the device */
 	const uint8_t *out_value;
@@ -646,4 +648,4 @@ bool transport_is_jtag(void);
 
 int jim_jtag_newtap(Jim_Interp *interp, int argc, Jim_Obj *const *argv);
 
-#endif /* OPENOCD_JTAG_JTAG_H */
+#endif /* JTAG_H */

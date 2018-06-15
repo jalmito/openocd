@@ -13,11 +13,12 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
-
-#ifndef OPENOCD_TARGET_NDS32_REG_H
-#define OPENOCD_TARGET_NDS32_REG_H
+#ifndef __NDS32_REG_H__
+#define __NDS32_REG_H__
 
 #define SRIDX(a, b, c)			((a << 7) | (b << 3) | c)
 #define NDS32_REGISTER_DISABLE		(0x0)
@@ -322,4 +323,4 @@ const char *nds32_reg_simple_name(uint32_t number);
 const char *nds32_reg_symbolic_name(uint32_t number);
 bool nds32_reg_exception(uint32_t number, uint32_t value);
 
-#endif /* OPENOCD_TARGET_NDS32_REG_H */
+#endif

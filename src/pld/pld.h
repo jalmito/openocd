@@ -13,11 +13,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_PLD_PLD_H
-#define OPENOCD_PLD_PLD_H
+#ifndef PLD_H
+#define PLD_H
 
 #include <helper/command.h>
 
@@ -49,4 +51,4 @@ struct pld_device *get_pld_device_by_num(int num);
 #define ERROR_PLD_DEVICE_INVALID        (-1000)
 #define ERROR_PLD_FILE_LOAD_FAILED      (-1001)
 
-#endif /* OPENOCD_PLD_PLD_H */
+#endif	/* PLD_H */

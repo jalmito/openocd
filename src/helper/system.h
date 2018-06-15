@@ -15,11 +15,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_HELPER_SYSTEM_H
-#define OPENOCD_HELPER_SYSTEM_H
+#ifndef SYSTEM_H
+#define SYSTEM_H
 
 /* standard C library header files */
 #include <stdio.h>
@@ -54,8 +56,8 @@
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
 #endif
-#ifdef HAVE_POLL_H
-#include <poll.h>
+#ifdef HAVE_SYS_POLL_H
+#include <sys/poll.h>
 #endif
 
 #ifdef __ECOS
@@ -86,4 +88,4 @@
 #define false   0
 #endif
 
-#endif /* OPENOCD_HELPER_SYSTEM_H */
+#endif	/* SYSTEM_H */

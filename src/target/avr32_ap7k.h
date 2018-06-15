@@ -12,11 +12,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_TARGET_AVR32_AP7K_H
-#define OPENOCD_TARGET_AVR32_AP7K_H
+#ifndef AVR32_AP7K
+#define AVR32_AP7K
 
 struct target;
 
@@ -40,4 +42,4 @@ struct avr32_core_reg {
 	struct avr32_ap7k_common *avr32_common;
 };
 
-#endif /* OPENOCD_TARGET_AVR32_AP7K_H */
+#endif	/*AVR32_AP7K*/

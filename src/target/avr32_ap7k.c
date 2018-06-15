@@ -15,7 +15,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -33,12 +35,12 @@
 #include "avr32_regs.h"
 #include "avr32_ap7k.h"
 
-static const char * const avr32_core_reg_list[] = {
+static char *avr32_core_reg_list[] = {
 	"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8",
 	"r9", "r10", "r11", "r12", "sp", "lr", "pc", "sr"
 };
 
-static const struct avr32_core_reg
+static struct avr32_core_reg
 	avr32_core_reg_list_arch_info[AVR32NUMCOREREGS] = {
 	{0, NULL, NULL},
 	{1, NULL, NULL},

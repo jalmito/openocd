@@ -12,7 +12,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
 /* This file supports the zy1000 debugger:
@@ -145,8 +147,8 @@ static int zy1000_power_dropout(int *dropout)
 static void waitSRST(bool asserted)
 {
 	bool first = true;
-	int64_t start = 0;
-	int64_t total = 0;
+	long long start = 0;
+	long total = 0;
 	const char *mode = asserted ? "assert" : "deassert";
 
 	for (;; ) {
@@ -167,7 +169,7 @@ static void waitSRST(bool asserted)
 		keep_alive();
 
 		if (total > 5000) {
-			LOG_ERROR("SRST took too long to %s: %" PRId64 "ms", mode, total);
+			LOG_ERROR("SRST took too long to %s: %dms", mode, (int)total);
 			break;
 		}
 	}

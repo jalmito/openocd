@@ -1,13 +1,23 @@
-noinst_LTLIBRARIES += %D%/libflash.la
-%C%_libflash_la_SOURCES = \
-	%D%/common.c %D%/common.h \
-	%D%/mflash.c %D%/mflash.h
+include $(top_srcdir)/common.mk
 
-%C%_libflash_la_LIBADD = \
-	%D%/nor/libocdflashnor.la \
-	%D%/nand/libocdflashnand.la
+SUBDIRS = \
+	nor \
+	nand
 
-STARTUP_TCL_SRCS += %D%/startup.tcl
+METASOURCES = AUTO
+noinst_LTLIBRARIES = libflash.la
+libflash_la_SOURCES = \
+	common.c \
+	mflash.c
 
-include %D%/nor/Makefile.am
-include %D%/nand/Makefile.am
+libflash_la_LIBADD = \
+	$(top_builddir)/src/flash/nor/libocdflashnor.la \
+	$(top_builddir)/src/flash/nand/libocdflashnand.la
+
+noinst_HEADERS = \
+	common.h \
+	mflash.h
+
+EXTRA_DIST = startup.tcl
+
+MAINTAINERCLEANFILES = $(srcdir)/Makefile.in

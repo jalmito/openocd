@@ -13,11 +13,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_FLASH_NAND_LPC32XX_H
-#define OPENOCD_FLASH_NAND_LPC32XX_H
+#ifndef LPC32xx_NAND_CONTROLLER_H
+#define LPC32xx_NAND_CONTROLLER_H
 
 enum lpc32xx_selected_controller {
 	LPC32xx_NO_CONTROLLER,
@@ -33,4 +35,4 @@ struct lpc32xx_nand_controller {
 	uint32_t sw_wp_upper_bound;
 };
 
-#endif /* OPENOCD_FLASH_NAND_LPC32XX_H */
+#endif	/*LPC32xx_NAND_CONTROLLER_H */

@@ -1,5 +1,5 @@
 /*
- * Copyright(c) 2013-2016 Intel Corporation.
+ * Copyright(c) 2013 Intel Corporation.
  *
  * Adrian Burns (adrian.burns@intel.com)
  * Thomas Faust (thomas.faust@intel.com)
@@ -8,9 +8,8 @@
  * Jeffrey Maxwell (jeffrey.r.maxwell@intel.com)
  *
  * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * it under the terms of version 2 of the GNU General Public License as
+ * published by the Free Software Foundation.
  *
  * This program is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,7 +17,8 @@
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Contact Information:
  * Intel Corporation
@@ -29,8 +29,8 @@
  * This is the interface to the x86 32 bit memory and breakpoint operations.
  */
 
-#ifndef OPENOCD_TARGET_X86_32_COMMON_H
-#define OPENOCD_TARGET_X86_32_COMMON_H
+#ifndef X86_32_COMMON_H
+#define X86_32_COMMON_H
 
 #include <jtag/jtag.h>
 #include <helper/command.h>
@@ -195,11 +195,6 @@ enum {
 	WBINVD,
 };
 
-enum x86_core_type {
-	LMT1,
-	LMT3_5
-};
-
 struct swbp_mem_patch {
 	uint8_t orig_byte;
 	uint32_t swbp_unique_id;
@@ -213,7 +208,6 @@ struct swbp_mem_patch {
 struct x86_32_common {
 	uint32_t common_magic;
 	void *arch_info;
-	enum x86_core_type core_type;
 	struct reg_cache *cache;
 	struct jtag_tap *curr_tap;
 	uint32_t stored_pc;
@@ -327,4 +321,4 @@ int x86_32_common_remove_breakpoint(struct target *t, struct breakpoint *bp);
 int x86_32_common_add_watchpoint(struct target *t, struct watchpoint *wp);
 int x86_32_common_remove_watchpoint(struct target *t, struct watchpoint *wp);
 
-#endif /* OPENOCD_TARGET_X86_32_COMMON_H */
+#endif /* X86_32_COMMON_H */

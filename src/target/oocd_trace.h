@@ -13,11 +13,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_TARGET_OOCD_TRACE_H
-#define OPENOCD_TARGET_OOCD_TRACE_H
+#ifndef OOCD_TRACE_H
+#define OOCD_TRACE_H
 
 #include <termios.h>
 
@@ -50,4 +52,4 @@ struct oocd_trace {
 
 extern struct etm_capture_driver oocd_trace_capture_driver;
 
-#endif /* OPENOCD_TARGET_OOCD_TRACE_H */
+#endif /* OOCD_TRACE_TRACE_H */

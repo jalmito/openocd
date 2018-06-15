@@ -1,174 +1,154 @@
-noinst_LTLIBRARIES += %D%/libocdjtagdrivers.la
-%C%_libocdjtagdrivers_la_LIBADD =
+include $(top_srcdir)/common.mk
 
-%C%_libocdjtagdrivers_la_SOURCES = \
-	$(DRIVERFILES) \
-	$(DRIVERHEADERS)
+noinst_LTLIBRARIES = libocdjtagdrivers.la
+libocdjtagdrivers_la_LIBADD =
 
-%C%_libocdjtagdrivers_la_CPPFLAGS = $(AM_CPPFLAGS)
+libocdjtagdrivers_la_SOURCES = \
+	$(DRIVERFILES)
 
-ULINK_FIRMWARE = %D%/OpenULINK
+libocdjtagdrivers_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBUSB1_CFLAGS) \
+	$(LIBUSB0_CFLAGS) $(HIDAPI_CFLAGS) $(LIBFTDI_CFLAGS)
 
-EXTRA_DIST += $(ULINK_FIRMWARE) \
-	%D%/usb_blaster/README.CheapClone \
-	%D%/Makefile.rlink \
-	%D%/rlink_call.m4 \
-	%D%/rlink_init.m4
+ULINK_FIRMWARE = $(srcdir)/OpenULINK
+
+EXTRA_DIST = $(ULINK_FIRMWARE) \
+	usb_blaster/README.CheapClone \
+	Makefile.rlink \
+	rlink_call.m4 \
+	rlink_init.m4
 
 DRIVERFILES =
+SUBDIRS=
 
 # Standard Driver: common files
-DRIVERFILES += %D%/driver.c
+DRIVERFILES += driver.c
 
 if USE_LIBUSB1
-DRIVERFILES += %D%/libusb1_common.c
-%C%_libocdjtagdrivers_la_CPPFLAGS += $(LIBUSB1_CFLAGS)
-%C%_libocdjtagdrivers_la_LIBADD += $(LIBUSB1_LIBS)
+DRIVERFILES += libusb1_common.c
 endif
 
 if USE_LIBUSB0
-DRIVERFILES += %D%/usb_common.c
-%C%_libocdjtagdrivers_la_CPPFLAGS += $(LIBUSB0_CFLAGS)
-%C%_libocdjtagdrivers_la_LIBADD += $(LIBUSB0_LIBS)
+DRIVERFILES += usb_common.c
 if !USE_LIBUSB1
-DRIVERFILES += %D%/libusb0_common.c
-endif
-endif
-
-if USE_LIBFTDI
-%C%_libocdjtagdrivers_la_CPPFLAGS += $(LIBFTDI_CFLAGS)
-%C%_libocdjtagdrivers_la_LIBADD += $(LIBFTDI_LIBS)
-endif
-
-if USE_HIDAPI
-%C%_libocdjtagdrivers_la_CPPFLAGS += $(HIDAPI_CFLAGS)
-%C%_libocdjtagdrivers_la_LIBADD += $(HIDAPI_LIBS)
-endif
-
-if USE_LIBJAYLINK
-%C%_libocdjtagdrivers_la_CPPFLAGS += $(LIBJAYLINK_CFLAGS)
-%C%_libocdjtagdrivers_la_LIBADD += $(LIBJAYLINK_LIBS)
-endif
-
-if JLINK
-DRIVERFILES += %D%/jlink.c
-if INTERNAL_LIBJAYLINK
-SUBDIRS += %D%/libjaylink
-DIST_SUBDIRS += %D%/libjaylink
-
-%C%_libocdjtagdrivers_la_LIBADD += %D%/libjaylink/libjaylink/libjaylink.la
-%C%_libocdjtagdrivers_la_CPPFLAGS += -I$(builddir)/%D%/libjaylink/libjaylink -I$(srcdir)/%D%/libjaylink
+DRIVERFILES += libusb0_common.c
 endif
 endif
 
 if BITBANG
-DRIVERFILES += %D%/bitbang.c
+DRIVERFILES += bitbang.c
 endif
 if PARPORT
-DRIVERFILES += %D%/parport.c
+DRIVERFILES += parport.c
 endif
 if DUMMY
-DRIVERFILES += %D%/dummy.c
+DRIVERFILES += dummy.c
+endif
+if FT2232_DRIVER
+DRIVERFILES += ft2232.c
 endif
 if FTDI
-DRIVERFILES += %D%/ftdi.c %D%/mpsse.c
+DRIVERFILES += ftdi.c mpsse.c
 endif
 if JTAG_VPI
-DRIVERFILES += %D%/jtag_vpi.c
+DRIVERFILES += jtag_vpi.c
 endif
 if USB_BLASTER_DRIVER
-%C%_libocdjtagdrivers_la_LIBADD += %D%/usb_blaster/libocdusbblaster.la
-include %D%/usb_blaster/Makefile.am
+SUBDIRS += usb_blaster
+libocdjtagdrivers_la_LIBADD += $(top_builddir)/src/jtag/drivers/usb_blaster/libocdusbblaster.la
 endif
 if AMTJTAGACCEL
-DRIVERFILES += %D%/amt_jtagaccel.c
+DRIVERFILES += amt_jtagaccel.c
 endif
 if EP93XX
-DRIVERFILES += %D%/ep93xx.c
+DRIVERFILES += ep93xx.c
 endif
 if AT91RM9200
-DRIVERFILES += %D%/at91rm9200.c
+DRIVERFILES += at91rm9200.c
 endif
 if GW16012
-DRIVERFILES += %D%/gw16012.c
+DRIVERFILES += gw16012.c
 endif
 if BITQ
-DRIVERFILES += %D%/bitq.c
+DRIVERFILES += bitq.c
 endif
-if PRESTO
-DRIVERFILES += %D%/presto.c
+if PRESTO_DRIVER
+DRIVERFILES += presto.c
 endif
 if USBPROG
-DRIVERFILES += %D%/usbprog.c
+DRIVERFILES += usbprog.c
+endif
+if JLINK
+DRIVERFILES += jlink.c
 endif
 if RLINK
-DRIVERFILES += %D%/rlink.c %D%/rlink_speed_table.c
+DRIVERFILES += rlink.c rlink_speed_table.c
 endif
 if ULINK
-DRIVERFILES += %D%/ulink.c
+DRIVERFILES += ulink.c
 ulinkdir = $(pkgdatadir)/OpenULINK
 dist_ulink_DATA = $(ULINK_FIRMWARE)/ulink_firmware.hex
-%C%_libocdjtagdrivers_la_LIBADD += -lm
 endif
 if VSLLINK
-DRIVERFILES += %D%/versaloon/usbtoxxx/usbtogpio.c
-DRIVERFILES += %D%/versaloon/usbtoxxx/usbtojtagraw.c
-DRIVERFILES += %D%/versaloon/usbtoxxx/usbtoswd.c
-DRIVERFILES += %D%/versaloon/usbtoxxx/usbtopwr.c
-DRIVERFILES += %D%/versaloon/usbtoxxx/usbtoxxx.c
-DRIVERFILES += %D%/versaloon/versaloon.c
-DRIVERFILES += %D%/vsllink.c
+DRIVERFILES += versaloon/usbtoxxx/usbtogpio.c
+DRIVERFILES += versaloon/usbtoxxx/usbtojtagraw.c
+DRIVERFILES += versaloon/usbtoxxx/usbtoswd.c
+DRIVERFILES += versaloon/usbtoxxx/usbtopwr.c
+DRIVERFILES += versaloon/usbtoxxx/usbtoxxx.c
+DRIVERFILES += versaloon/versaloon.c
+DRIVERFILES += vsllink.c
 endif
 if ARMJTAGEW
-DRIVERFILES += %D%/arm-jtag-ew.c
+DRIVERFILES += arm-jtag-ew.c
 endif
 if BUSPIRATE
-DRIVERFILES += %D%/buspirate.c
+DRIVERFILES += buspirate.c
 endif
 if REMOTE_BITBANG
-DRIVERFILES += %D%/remote_bitbang.c
+DRIVERFILES += remote_bitbang.c
 endif
 if HLADAPTER
-DRIVERFILES += %D%/stlink_usb.c
-DRIVERFILES += %D%/ti_icdi_usb.c
+DRIVERFILES += stlink_usb.c
+DRIVERFILES += ti_icdi_usb.c
 endif
 if OSBDM
-DRIVERFILES += %D%/osbdm.c
+DRIVERFILES += osbdm.c
 endif
 if OPENDOUS
-DRIVERFILES += %D%/opendous.c
+DRIVERFILES += opendous.c
 endif
 if SYSFSGPIO
-DRIVERFILES += %D%/sysfsgpio.c
+DRIVERFILES += sysfsgpio.c
 endif
 if BCM2835GPIO
-DRIVERFILES += %D%/bcm2835gpio.c
+DRIVERFILES += bcm2835gpio.c
 endif
 
 if OPENJTAG
-DRIVERFILES += %D%/openjtag.c
+DRIVERFILES += openjtag.c
 endif
 
 if CMSIS_DAP
-DRIVERFILES += %D%/cmsis_dap_usb.c
+DRIVERFILES += cmsis_dap_usb.c
 endif
 
-DRIVERHEADERS = \
-	%D%/bitbang.h \
-	%D%/bitq.h \
-	%D%/libusb0_common.h \
-	%D%/libusb1_common.h \
-	%D%/libusb_common.h \
-	%D%/minidriver_imp.h \
-	%D%/mpsse.h \
-	%D%/rlink.h \
-	%D%/rlink_dtc_cmd.h \
-	%D%/rlink_ep1_cmd.h \
-	%D%/rlink_st7.h \
-	%D%/usb_common.h \
-	%D%/versaloon/usbtoxxx/usbtoxxx.h \
-	%D%/versaloon/usbtoxxx/usbtoxxx_internal.h \
-	%D%/versaloon/versaloon.h \
-	%D%/versaloon/versaloon_include.h \
-	%D%/versaloon/versaloon_internal.h
+noinst_HEADERS = \
+	bitbang.h \
+	bitq.h \
+	ftd2xx_common.h \
+	libusb0_common.h \
+	libusb1_common.h \
+	libusb_common.h \
+	minidriver_imp.h \
+	mpsse.h \
+	rlink.h \
+	rlink_dtc_cmd.h \
+	rlink_ep1_cmd.h \
+	rlink_st7.h \
+	usb_common.h \
+	versaloon/usbtoxxx/usbtoxxx.h \
+	versaloon/usbtoxxx/usbtoxxx_internal.h \
+	versaloon/versaloon.h \
+	versaloon/versaloon_include.h \
+	versaloon/versaloon_internal.h
 
+MAINTAINERCLEANFILES = $(srcdir)/Makefile.in

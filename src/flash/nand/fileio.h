@@ -12,11 +12,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_FLASH_NAND_FILEIO_H
-#define OPENOCD_FLASH_NAND_FILEIO_H
+#ifndef FLASH_NAND_FILEIO_H
+#define FLASH_NAND_FILEIO_H
 
 #include <helper/time_support.h>
 #include <helper/fileio.h>
@@ -35,7 +37,7 @@ struct nand_fileio_state {
 	const int *eccpos;
 
 	bool file_opened;
-	struct fileio *fileio;
+	struct fileio fileio;
 
 	struct duration bench;
 };
@@ -53,4 +55,4 @@ COMMAND_HELPER(nand_fileio_parse_args, struct nand_fileio_state *state,
 
 int nand_fileio_read(struct nand_device *nand, struct nand_fileio_state *s);
 
-#endif /* OPENOCD_FLASH_NAND_FILEIO_H */
+#endif	/* FLASH_NAND_FILEIO_H */

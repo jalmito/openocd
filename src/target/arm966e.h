@@ -16,11 +16,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_TARGET_ARM966E_H
-#define OPENOCD_TARGET_ARM966E_H
+#ifndef ARM966E_H
+#define ARM966E_H
 
 #include "arm9tdmi.h"
 
@@ -45,4 +47,4 @@ int arm966e_write_cp15(struct target *target, int reg_addr, uint32_t value);
 
 extern const struct command_registration arm966e_command_handlers[];
 
-#endif /* OPENOCD_TARGET_ARM966E_H */
+#endif /* ARM966E_H */

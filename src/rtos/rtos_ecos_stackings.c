@@ -11,7 +11,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -19,7 +21,6 @@
 #endif
 
 #include "rtos.h"
-#include "rtos_standard_stackings.h"
 #include "target/armv7m.h"
 
 static const struct stack_register_offset rtos_eCos_Cortex_M3_stack_offsets[ARMV7M_NUM_CORE_REGS] = {
@@ -46,6 +47,6 @@ const struct rtos_register_stacking rtos_eCos_Cortex_M3_stacking = {
 	0x44,					/* stack_registers_size */
 	-1,						/* stack_growth_direction */
 	ARMV7M_NUM_CORE_REGS,	/* num_output_registers */
-	rtos_generic_stack_align8,	/* stack_alignment */
+	8,						/* stack_alignment */
 	rtos_eCos_Cortex_M3_stack_offsets	/* register_offsets */
 };

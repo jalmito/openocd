@@ -16,7 +16,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -132,12 +134,6 @@ static const struct command_registration stlink_transport_command_handlers[] = {
 	 .usage = "",
 	 .chain = hl_transport_jtag_subcommand_handlers,
 	 },
-	{
-	 .name = "jtag_ntrst_delay",
-	 .mode = COMMAND_ANY,
-	 .handler = hl_transport_jtag_command,
-	 .usage = "",
-	 },
 	COMMAND_REGISTRATION_DONE
 };
 
@@ -208,14 +204,12 @@ static struct transport hl_swd_transport = {
 	.name = "hla_swd",
 	.select = hl_transport_select,
 	.init = hl_transport_init,
-	.override_target = hl_interface_override_target,
 };
 
 static struct transport hl_jtag_transport = {
 	.name = "hla_jtag",
 	.select = hl_transport_select,
 	.init = hl_transport_init,
-	.override_target = hl_interface_override_target,
 };
 
 static struct transport stlink_swim_transport = {

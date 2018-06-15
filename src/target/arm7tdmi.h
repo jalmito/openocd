@@ -16,11 +16,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_TARGET_ARM7TDMI_H
-#define OPENOCD_TARGET_ARM7TDMI_H
+#ifndef ARM7TDMI_H
+#define ARM7TDMI_H
 
 #include "embeddedice.h"
 
@@ -29,4 +31,4 @@ int arm7tdmi_init_arch_info(struct target *target,
 int arm7tdmi_init_target(struct command_context *cmd_ctx,
 		struct target *target);
 
-#endif /* OPENOCD_TARGET_ARM7TDMI_H */
+#endif /* ARM7TDMI_H */

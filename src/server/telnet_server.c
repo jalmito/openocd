@@ -19,7 +19,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -205,16 +207,9 @@ static void telnet_save_history(struct telnet_connection *t_con)
 
 static int telnet_new_connection(struct connection *connection)
 {
-	struct telnet_connection *telnet_connection;
+	struct telnet_connection *telnet_connection = malloc(sizeof(struct telnet_connection));
 	struct telnet_service *telnet_service = connection->service->priv;
 	int i;
-
-	telnet_connection = malloc(sizeof(struct telnet_connection));
-
-	if (!telnet_connection) {
-		LOG_ERROR("Failed to allocate telnet connection.");
-		return ERROR_FAIL;
-	}
 
 	connection->priv = telnet_connection;
 
@@ -624,20 +619,13 @@ int telnet_init(char *banner)
 		return ERROR_OK;
 	}
 
-	struct telnet_service *telnet_service;
-
-	telnet_service = malloc(sizeof(struct telnet_service));
-
-	if (!telnet_service) {
-		LOG_ERROR("Failed to allocate telnet service.");
-		return ERROR_FAIL;
-	}
+	struct telnet_service *telnet_service = malloc(sizeof(struct telnet_service));
 
 	telnet_service->banner = banner;
 
 	return add_service("telnet",
 		telnet_port,
-		CONNECTION_LIMIT_UNLIMITED,
+		1,
 		telnet_new_connection,
 		telnet_input,
 		telnet_connection_closed,

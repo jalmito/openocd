@@ -12,11 +12,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_TARGET_AVR32_JTAG_H
-#define OPENOCD_TARGET_AVR32_JTAG_H
+#ifndef AVR32_JTAG
+#define AVR32_JTAG
 
 #define	AVR32NUMCOREREGS	17
 
@@ -100,4 +102,4 @@ int avr32_ocd_clearbits(struct avr32_jtag *jtag, int reg, uint32_t bits);
 
 int avr32_jtag_exec(struct avr32_jtag *jtag_info, uint32_t inst);
 
-#endif /* OPENOCD_TARGET_AVR32_JTAG_H */
+#endif /* AVR32_JTAG */

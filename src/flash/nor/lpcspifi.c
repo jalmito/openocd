@@ -13,7 +13,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -54,6 +56,21 @@ struct lpcspifi_flash_bank {
 	uint32_t bank_num;
 	uint32_t max_spi_clock_mhz;
 	const struct flash_device *dev;
+};
+
+struct lpcspifi_target {
+	char *name;
+	uint32_t tap_idcode;
+	uint32_t spifi_base;
+	uint32_t ssp_base;
+	uint32_t io_base;
+	uint32_t ioconfig_base; /* base address for the port word pin registers */
+};
+
+static const struct lpcspifi_target target_devices[] = {
+	/* name,          tap_idcode, spifi_base, ssp_base,   io_base,    ioconfig_base */
+	{ "LPC43xx/18xx", 0x4ba00477, 0x14000000, 0x40083000, 0x400F4000, 0x40086000 },
+	{ NULL,           0,          0,          0,          0,          0 }
 };
 
 /* flash_bank lpcspifi <base> <size> <chip_width> <bus_width> <target>
@@ -106,7 +123,7 @@ static int ssp_setcs(struct target *target, uint32_t io_base, unsigned int value
  * and the controller is idle. */
 static int poll_ssp_busy(struct target *target, uint32_t ssp_base, int timeout)
 {
-	int64_t endtime;
+	long long endtime;
 	uint32_t value;
 	int retval;
 
@@ -136,7 +153,7 @@ static int lpcspifi_set_hw_mode(struct flash_bank *bank)
 	struct target *target = bank->target;
 	struct lpcspifi_flash_bank *lpcspifi_info = bank->driver_priv;
 	uint32_t ssp_base = lpcspifi_info->ssp_base;
-	struct armv7m_algorithm armv7m_info;
+	struct arm_algorithm arm_info;
 	struct working_area *spifi_init_algorithm;
 	struct reg_param reg_params[2];
 	int retval = ERROR_OK;
@@ -168,8 +185,8 @@ static int lpcspifi_set_hw_mode(struct flash_bank *bank)
 		0xa0, 0x47, 0x00, 0xf0, 0x00, 0xb8, 0x00, 0xbe
 	};
 
-	armv7m_info.common_magic = ARMV7M_COMMON_MAGIC;
-	armv7m_info.core_mode = ARM_MODE_THREAD;
+	arm_info.common_magic = ARMV7M_COMMON_MAGIC;
+	arm_info.core_mode = ARM_MODE_THREAD;
 
 
 	LOG_DEBUG("Allocating working area for SPIFI init algorithm");
@@ -219,7 +236,7 @@ static int lpcspifi_set_hw_mode(struct flash_bank *bank)
 	retval = target_run_algorithm(target, 0 , NULL, 2, reg_params,
 		spifi_init_algorithm->address,
 		spifi_init_algorithm->address + sizeof(spifi_init_code) - 2,
-		1000, &armv7m_info);
+		1000, &arm_info);
 
 	if (retval != ERROR_OK)
 		LOG_ERROR("Error executing SPIFI init algorithm");
@@ -325,7 +342,7 @@ static int wait_till_ready(struct flash_bank *bank, int timeout)
 {
 	uint32_t status;
 	int retval;
-	int64_t endtime;
+	long long endtime;
 
 	endtime = timeval_ms() + timeout;
 	do {
@@ -416,7 +433,7 @@ static int lpcspifi_erase(struct flash_bank *bank, int first, int last)
 	struct target *target = bank->target;
 	struct lpcspifi_flash_bank *lpcspifi_info = bank->driver_priv;
 	struct reg_param reg_params[4];
-	struct armv7m_algorithm armv7m_info;
+	struct arm_algorithm arm_info;
 	struct working_area *erase_algorithm;
 	int retval = ERROR_OK;
 	int sector;
@@ -511,8 +528,8 @@ static int lpcspifi_erase(struct flash_bank *bank, int first, int last)
 		0x70, 0x47, 0x00, 0x20, 0x00, 0xbe, 0xff, 0xff
 	};
 
-	armv7m_info.common_magic = ARMV7M_COMMON_MAGIC;
-	armv7m_info.core_mode = ARM_MODE_THREAD;
+	arm_info.common_magic = ARMV7M_COMMON_MAGIC;
+	arm_info.core_mode = ARM_MODE_THREAD;
 
 
 	/* Get memory for spifi initialization algorithm */
@@ -547,7 +564,7 @@ static int lpcspifi_erase(struct flash_bank *bank, int first, int last)
 	retval = target_run_algorithm(target, 0 , NULL, 4, reg_params,
 		erase_algorithm->address,
 		erase_algorithm->address + sizeof(lpcspifi_flash_erase_code) - 4,
-		3000*(last - first + 1), &armv7m_info);
+		3000*(last - first + 1), &arm_info);
 
 	if (retval != ERROR_OK)
 		LOG_ERROR("Error executing flash erase algorithm");
@@ -582,7 +599,7 @@ static int lpcspifi_write(struct flash_bank *bank, const uint8_t *buffer,
 	uint32_t page_size, fifo_size;
 	struct working_area *fifo;
 	struct reg_param reg_params[5];
-	struct armv7m_algorithm armv7m_info;
+	struct arm_algorithm arm_info;
 	struct working_area *write_algorithm;
 	int sector;
 	int retval = ERROR_OK;
@@ -671,8 +688,7 @@ static int lpcspifi_write(struct flash_bank *bank, const uint8_t *buffer,
 		0x00, 0xf0, 0x02, 0xb8, 0x4f, 0xf0, 0x00, 0x08,
 		0x4f, 0xf4, 0x80, 0x4a, 0xc4, 0xf2, 0x0f, 0x0a,
 		0xca, 0xf8, 0xab, 0x80, 0x70, 0x47, 0x00, 0x20,
-		0x50, 0x60, 0xff, 0xf7, 0xef, 0xff, 0x30, 0x46,
-		0x00, 0xbe, 0xff, 0xff
+		0x50, 0x60, 0x30, 0x46, 0x00, 0xbe, 0xff, 0xff
 	};
 
 	if (target_alloc_working_area(target, sizeof(lpcspifi_flash_write_code),
@@ -681,7 +697,7 @@ static int lpcspifi_write(struct flash_bank *bank, const uint8_t *buffer,
 			" a working area > %zdB in order to write to SPIFI flash.",
 			sizeof(lpcspifi_flash_write_code));
 		return ERROR_TARGET_RESOURCE_NOT_AVAILABLE;
-	}
+	};
 
 	retval = target_write_buffer(target, write_algorithm->address,
 			sizeof(lpcspifi_flash_write_code),
@@ -717,10 +733,10 @@ static int lpcspifi_write(struct flash_bank *bank, const uint8_t *buffer,
 	if (target_alloc_working_area(target, fifo_size, &fifo) != ERROR_OK) {
 		target_free_working_area(target, write_algorithm);
 		return ERROR_TARGET_RESOURCE_NOT_AVAILABLE;
-	}
+	};
 
-	armv7m_info.common_magic = ARMV7M_COMMON_MAGIC;
-	armv7m_info.core_mode = ARM_MODE_THREAD;
+	arm_info.common_magic = ARMV7M_COMMON_MAGIC;
+	arm_info.core_mode = ARM_MODE_THREAD;
 
 	init_reg_param(&reg_params[0], "r0", 32, PARAM_IN_OUT);		/* buffer start, status (out) */
 	init_reg_param(&reg_params[1], "r1", 32, PARAM_OUT);		/* buffer end */
@@ -739,7 +755,7 @@ static int lpcspifi_write(struct flash_bank *bank, const uint8_t *buffer,
 			5, reg_params,
 			fifo->address, fifo->size,
 			write_algorithm->address, 0,
-			&armv7m_info
+			&arm_info
 	);
 
 	if (retval != ERROR_OK)
@@ -835,9 +851,14 @@ static int lpcspifi_read_flash_id(struct flash_bank *bank, uint32_t *id)
 
 static int lpcspifi_probe(struct flash_bank *bank)
 {
+	struct target *target = bank->target;
 	struct lpcspifi_flash_bank *lpcspifi_info = bank->driver_priv;
+	uint32_t ssp_base;
+	uint32_t io_base;
+	uint32_t ioconfig_base;
 	struct flash_sector *sectors;
 	uint32_t id = 0; /* silence uninitialized warning */
+	const struct lpcspifi_target *target_device;
 	int retval;
 
 	/* If we've already probed, we should be fine to skip this time. */
@@ -845,10 +866,25 @@ static int lpcspifi_probe(struct flash_bank *bank)
 		return ERROR_OK;
 	lpcspifi_info->probed = 0;
 
-	lpcspifi_info->ssp_base = 0x40083000;
-	lpcspifi_info->io_base = 0x400F4000;
-	lpcspifi_info->ioconfig_base = 0x40086000;
+	for (target_device = target_devices ; target_device->name ; ++target_device)
+		if (target_device->tap_idcode == target->tap->idcode)
+			break;
+	if (!target_device->name) {
+		LOG_ERROR("Device ID 0x%" PRIx32 " is not known as SPIFI capable",
+				target->tap->idcode);
+		return ERROR_FAIL;
+	}
+
+	ssp_base = target_device->ssp_base;
+	io_base = target_device->io_base;
+	ioconfig_base = target_device->ioconfig_base;
+	lpcspifi_info->ssp_base = ssp_base;
+	lpcspifi_info->io_base = io_base;
+	lpcspifi_info->ioconfig_base = ioconfig_base;
 	lpcspifi_info->bank_num = bank->bank_number;
+
+	LOG_DEBUG("Valid SPIFI on device %s at address 0x%" PRIx32,
+		target_device->name, bank->base);
 
 	/* read and decode flash ID; returns in SW mode */
 	retval = lpcspifi_read_flash_id(bank, &id);

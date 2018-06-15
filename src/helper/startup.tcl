@@ -16,12 +16,10 @@ proc exit {} {
 proc ocd_bouncer {name args} {
 	set cmd [format "ocd_%s" $name]
 	set type [eval ocd_command type $cmd $args]
-	set errcode error
 	if {$type == "native"} {
 		return [eval $cmd $args]
 	} else {if {$type == "simple"} {
-		set errcode [catch {eval $cmd $args}]
-		if {$errcode == 0} {
+		if {[catch {eval $cmd $args}] == 0} {
 			return ""
 		} else {
 			# 'classic' commands output error message as part of progress output
@@ -32,9 +30,9 @@ proc ocd_bouncer {name args} {
 		set errmsg [format "%s: command requires more arguments" \
 			[concat $name " " $args]]
 	} else {
-		set errmsg [format "invalid subcommand \"%s\"" $args]
+		set errmsg [format "Unknown command type: %s" $type]
 	}}}
-	return -code $errcode $errmsg
+	return -code error $errmsg
 }
 
 # Try flipping / and \ to find file if the filename does not

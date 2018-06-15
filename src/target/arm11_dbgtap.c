@@ -15,7 +15,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -408,7 +410,7 @@ int arm11_run_instr_no_data(struct arm11_common *arm11,
 			if (flag)
 				break;
 
-			int64_t then = 0;
+			long long then = 0;
 
 			if (i == 1000)
 				then = timeval_ms();
@@ -491,7 +493,7 @@ int arm11_run_instr_data_to_core(struct arm11_common *arm11,
 
 			JTAG_DEBUG("DTR  Ready %d  nRetry %d", Ready, nRetry);
 
-			int64_t then = 0;
+			long long then = 0;
 
 			if (i == 1000)
 				then = timeval_ms();
@@ -523,7 +525,7 @@ int arm11_run_instr_data_to_core(struct arm11_common *arm11,
 		JTAG_DEBUG("DTR  Data %08x  Ready %d  nRetry %d",
 			(unsigned) Data, Ready, nRetry);
 
-		int64_t then = 0;
+		long long then = 0;
 
 		if (i == 1000)
 			then = timeval_ms();
@@ -787,7 +789,7 @@ int arm11_run_instr_data_from_core(struct arm11_common *arm11,
 			JTAG_DEBUG("DTR  Data %08x  Ready %d  nRetry %d",
 				(unsigned) Data, Ready, nRetry);
 
-			int64_t then = 0;
+			long long then = 0;
 
 			if (i == 1000)
 				then = timeval_ms();
@@ -922,7 +924,7 @@ int arm11_sc7_run(struct arm11_common *arm11, struct arm11_sc7_action *actions, 
 			if (Ready)
 				break;
 
-			int64_t then = 0;
+			long long then = 0;
 
 			if (i_n == 1000)
 				then = timeval_ms();

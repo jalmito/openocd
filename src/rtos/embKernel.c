@@ -13,7 +13,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -56,7 +58,7 @@ enum {
 	SYMBOL_ID_sCurrentTaskCount = 5,
 };
 
-static const char * const embKernel_symbol_list[] = {
+static char *embKernel_symbol_list[] = {
 		"Rtos::sCurrentTask",
 		"Rtos::sListReady",
 		"Rtos::sListSleep",
@@ -79,7 +81,7 @@ struct embKernel_params {
 	const struct rtos_register_stacking *stacking_info;
 };
 
-static const struct embKernel_params embKernel_params_list[] = {
+struct embKernel_params embKernel_params_list[] = {
 		{
 			"cortex_m", /* target_name */
 			4, /* pointer_width */
@@ -129,7 +131,7 @@ static int embKernel_create(struct target *target)
 		return -1;
 	}
 
-	target->rtos->rtos_specific_params = (void *) &embKernel_params_list[i];
+	target->rtos->rtos_specific_params = &embKernel_params_list[i];
 	return 0;
 }
 
@@ -143,6 +145,7 @@ static int embKernel_get_tasks_details(struct rtos *rtos, int64_t iterable, cons
 		return retval;
 	details->threadid = (threadid_t) task;
 	details->exists = true;
+	details->display_str = NULL;
 
 	int64_t name_ptr = 0;
 	retval = target_read_buffer(rtos->target, task + param->thread_name_offset, param->pointer_width,
@@ -168,11 +171,11 @@ static int embKernel_get_tasks_details(struct rtos *rtos, int64_t iterable, cons
 		return retval;
 	details->extra_info_str = malloc(EMBKERNEL_MAX_THREAD_NAME_STR_SIZE);
 	if (task == rtos->current_thread) {
-		snprintf(details->extra_info_str, EMBKERNEL_MAX_THREAD_NAME_STR_SIZE, "State: Running, Priority: %u",
+		snprintf(details->extra_info_str, EMBKERNEL_MAX_THREAD_NAME_STR_SIZE, "Pri=%u, Running",
 				(unsigned int) priority);
 	} else {
-		snprintf(details->extra_info_str, EMBKERNEL_MAX_THREAD_NAME_STR_SIZE, "State: %s, Priority: %u",
-				state_str, (unsigned int) priority);
+		snprintf(details->extra_info_str, EMBKERNEL_MAX_THREAD_NAME_STR_SIZE, "Pri=%u, %s", (unsigned int) priority,
+				state_str);
 	}
 
 	LOG_OUTPUT("Getting task details: iterable=0x%08X, task=0x%08X, name=%s\n", (unsigned int)iterable,
@@ -332,7 +335,7 @@ static int embKernel_get_thread_reg_list(struct rtos *rtos, int64_t thread_id, c
 static int embKernel_get_symbol_list_to_lookup(symbol_table_elem_t *symbol_list[])
 {
 	unsigned int i;
-	*symbol_list = calloc(ARRAY_SIZE(embKernel_symbol_list), sizeof(symbol_table_elem_t));
+	*symbol_list = malloc(sizeof(symbol_table_elem_t) * ARRAY_SIZE(embKernel_symbol_list));
 
 	for (i = 0; i < ARRAY_SIZE(embKernel_symbol_list); i++)
 		(*symbol_list)[i].symbol_name = embKernel_symbol_list[i];

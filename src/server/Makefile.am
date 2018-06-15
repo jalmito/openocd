@@ -1,19 +1,23 @@
-noinst_LTLIBRARIES += %D%/libserver.la
-%C%_libserver_la_SOURCES = \
-	%D%/server.c \
-	%D%/telnet_server.c \
-	%D%/gdb_server.c \
-	%D%/server.h \
-	%D%/telnet_server.h \
-	%D%/gdb_server.h \
-	%D%/server_stubs.c \
-	%D%/tcl_server.c \
-	%D%/tcl_server.h
+include $(top_srcdir)/common.mk
 
-%C%_libserver_la_CFLAGS = $(AM_CFLAGS)
+METASOURCES = AUTO
+noinst_LTLIBRARIES = libserver.la
+noinst_HEADERS = server.h telnet_server.h gdb_server.h
+libserver_la_SOURCES = server.c telnet_server.c gdb_server.c
+
+libserver_la_SOURCES += server_stubs.c
+
+libserver_la_CFLAGS =
 if IS_MINGW
 # FD_* macros are sloppy with their signs on MinGW32 platform
-%C%_libserver_la_CFLAGS += -Wno-sign-compare
+libserver_la_CFLAGS += -Wno-sign-compare
 endif
 
-STARTUP_TCL_SRCS += %D%/startup.tcl
+# tcl server addons
+noinst_HEADERS += tcl_server.h
+libserver_la_SOURCES += tcl_server.c
+
+EXTRA_DIST = \
+	startup.tcl
+
+MAINTAINERCLEANFILES = $(srcdir)/Makefile.in

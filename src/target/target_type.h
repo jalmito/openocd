@@ -19,11 +19,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_TARGET_TARGET_TYPE_H
-#define OPENOCD_TARGET_TARGET_TYPE_H
+#ifndef TARGET_TYPE_H
+#define TARGET_TYPE_H
 
 #include <jim-nvp.h>
 
@@ -131,7 +133,7 @@ struct target_type {
 	int (*checksum_memory)(struct target *target, uint32_t address,
 			uint32_t count, uint32_t *checksum);
 	int (*blank_check_memory)(struct target *target, uint32_t address,
-			uint32_t count, uint32_t *blank, uint8_t erased_value);
+			uint32_t count, uint32_t *blank);
 
 	/*
 	 * target break-/watchpoint control
@@ -223,13 +225,6 @@ struct target_type {
 	 * */
 	int (*init_target)(struct command_context *cmd_ctx, struct target *target);
 
-	/**
-	 * Free all the resources allocated by the target.
-	 *
-	 * @param target The target to deinit
-	 */
-	void (*deinit_target)(struct target *target);
-
 	/* translate from virtual to physical address. Default implementation is successful
 	 * no-op(i.e. virtual==physical).
 	 */
@@ -276,4 +271,4 @@ struct target_type {
 			uint32_t max_num_samples, uint32_t *num_samples, uint32_t seconds);
 };
 
-#endif /* OPENOCD_TARGET_TARGET_TYPE_H */
+#endif /* TARGET_TYPE_H */

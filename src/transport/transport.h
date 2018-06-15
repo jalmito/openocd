@@ -13,11 +13,12 @@
  * GNU General Public License for more details.
 
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef OPENOCD_TRANSPORT_TRANSPORT_H
-#define OPENOCD_TRANSPORT_TRANSPORT_H
+#ifndef TRANSPORT_H
+#define TRANSPORT_H
 
 #include "helper/command.h"
 
@@ -65,14 +66,6 @@ struct transport {
 	int (*init)(struct command_context *ctx);
 
 	/**
-	 * Optional. If defined, allows transport to override target
-	 * name prior to initialisation.
-	 *
-	 * @returns ERROR_OK on success, or an error code on failure.
-	 */
-	int (*override_target)(const char **targetname);
-
-	/**
 	 * Transports are stored in a singly linked list.
 	 */
 	struct transport *next;
@@ -90,4 +83,4 @@ int allow_transports(struct command_context *ctx, const char * const *vector);
 
 bool transports_are_declared(void);
 
-#endif /* OPENOCD_TRANSPORT_TRANSPORT_H */
+#endif

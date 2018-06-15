@@ -19,11 +19,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_JTAG_COMMANDS_H
-#define OPENOCD_JTAG_COMMANDS_H
+#ifndef JTAG_COMMANDS_H
+#define JTAG_COMMANDS_H
 
 /**
  * The inferred type of a scan_command_s structure, indicating whether
@@ -173,4 +175,4 @@ int jtag_scan_size(const struct scan_command *cmd);
 int jtag_read_buffer(uint8_t *buffer, const struct scan_command *cmd);
 int jtag_build_buffer(const struct scan_command *cmd, uint8_t **buffer);
 
-#endif /* OPENOCD_JTAG_COMMANDS_H */
+#endif /* JTAG_COMMANDS_H */

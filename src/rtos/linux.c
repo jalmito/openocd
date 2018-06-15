@@ -14,7 +14,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
 #ifdef HAVE_CONFIG_H
@@ -38,7 +40,7 @@
 #define MAX_THREADS 200
 /*  specific task  */
 struct linux_os {
-	const char *name;
+	char *name;
 	uint32_t init_task_addr;
 	int thread_count;
 	int threadid_count;
@@ -318,7 +320,7 @@ static int linux_os_detect(struct target *target)
 static int linux_os_smp_init(struct target *target);
 static int linux_os_clean(struct target *target);
 #define INIT_TASK 0
-static const char * const linux_symbol_list[] = {
+static char *linux_symbol_list[] = {
 	"init_task",
 	NULL
 };
@@ -327,7 +329,7 @@ static int linux_get_symbol_list_to_lookup(symbol_table_elem_t *symbol_list[])
 {
 	unsigned int i;
 	*symbol_list = (symbol_table_elem_t *)
-		calloc(ARRAY_SIZE(linux_symbol_list), sizeof(symbol_table_elem_t));
+		malloc(sizeof(symbol_table_elem_t) * ARRAY_SIZE(linux_symbol_list));
 
 	for (i = 0; i < ARRAY_SIZE(linux_symbol_list); i++)
 		(*symbol_list)[i].symbol_name = linux_symbol_list[i];
@@ -1147,7 +1149,6 @@ int linux_gdb_thread_packet(struct target *target,
 	}
 
 	gdb_put_packet(connection, out_str, strlen(out_str));
-	free(out_str);
 	return ERROR_OK;
 }
 
@@ -1213,7 +1214,7 @@ int linux_thread_extra_info(struct target *target,
 		if (temp->threadid == threadid) {
 			char *pid = " PID: ";
 			char *pid_current = "*PID: ";
-			char *name = "Name: ";
+			char *name = "NAME: ";
 			int str_size = strlen(pid) + strlen(name);
 			char *tmp_str = calloc(1, str_size + 50);
 			char *tmp_str_ptr = tmp_str;
@@ -1225,12 +1226,13 @@ int linux_thread_extra_info(struct target *target,
 			else
 				tmp_str_ptr += sprintf(tmp_str_ptr, "%s", pid);
 
-			tmp_str_ptr += sprintf(tmp_str_ptr, "%d, ", (int)temp->pid);
+			tmp_str_ptr +=
+				sprintf(tmp_str_ptr, "%d", (int)temp->pid);
+			tmp_str_ptr += sprintf(tmp_str_ptr, "%s", " | ");
 			sprintf(tmp_str_ptr, "%s", name);
 			sprintf(tmp_str_ptr, "%s", temp->name);
 			char *hex_str = calloc(1, strlen(tmp_str) * 2 + 1);
-			size_t pkt_len = hexify(hex_str, (const uint8_t *)tmp_str,
-				strlen(tmp_str), strlen(tmp_str) * 2 + 1);
+			int pkt_len = hexify(hex_str, tmp_str, 0, strlen(tmp_str) * 2 + 1);
 			gdb_put_packet(connection, hex_str, pkt_len);
 			free(hex_str);
 			free(tmp_str);

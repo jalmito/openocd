@@ -13,11 +13,12 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
-
-#ifndef OPENOCD_TARGET_NDS32_AICE_H
-#define OPENOCD_TARGET_NDS32_AICE_H
+#ifndef __NDS32_AICE_H__
+#define __NDS32_AICE_H__
 
 #include <jtag/aice/aice_port.h>
 
@@ -158,4 +159,4 @@ static inline int aice_set_data_endian(struct aice_port_s *aice,
 	return aice->port->api->set_data_endian(aice->coreid, target_data_endian);
 }
 
-#endif /* OPENOCD_TARGET_NDS32_AICE_H */
+#endif

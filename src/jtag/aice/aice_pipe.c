@@ -13,7 +13,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -174,7 +176,7 @@ static int aice_pipe_write(const void *buffer, int count)
 static int aice_pipe_read(void *buffer, int count)
 {
 	int n;
-	int64_t then, cur;
+	long long then, cur;
 
 	then = timeval_ms();
 

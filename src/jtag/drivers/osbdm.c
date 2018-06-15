@@ -13,7 +13,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 #ifdef HAVE_CONFIG_H
 #	include "config.h"
@@ -373,7 +375,7 @@ static int osbdm_flush(struct osbdm *osbdm, struct queue* queue)
 static int osbdm_open(struct osbdm *osbdm)
 {
 	(void)memset(osbdm, 0, sizeof(*osbdm));
-	if (jtag_libusb_open(osbdm_vid, osbdm_pid, NULL, &osbdm->devh) != ERROR_OK)
+	if (jtag_libusb_open(osbdm_vid, osbdm_pid, &osbdm->devh) != ERROR_OK)
 		return ERROR_FAIL;
 
 	if (jtag_libusb_claim_interface(osbdm->devh, 0) != ERROR_OK)

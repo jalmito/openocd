@@ -19,11 +19,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_HELPER_LOG_H
-#define OPENOCD_HELPER_LOG_H
+#ifndef ERROR_H
+#define ERROR_H
 
 #include <helper/command.h>
 
@@ -60,8 +62,6 @@ enum log_levels {
 void log_printf(enum log_levels level, const char *file, unsigned line,
 		const char *function, const char *format, ...)
 __attribute__ ((format (PRINTF_ATTRIBUTE_FORMAT, 5, 6)));
-void log_vprintf_lf(enum log_levels level, const char *file, unsigned line,
-		const char *function, const char *format, va_list args);
 void log_printf_lf(enum log_levels level, const char *file, unsigned line,
 		const char *function, const char *format, ...)
 __attribute__ ((format (PRINTF_ATTRIBUTE_FORMAT, 5, 6)));
@@ -138,7 +138,5 @@ extern int debug_level;
  * make no assumptions about what went wrong and try to handle the problem.
  */
 #define ERROR_FAIL						(-4)
-#define ERROR_WAIT						(-5)
 
-
-#endif /* OPENOCD_HELPER_LOG_H */
+#endif	/* LOG_H */

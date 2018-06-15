@@ -1,49 +1,61 @@
-noinst_LTLIBRARIES += %D%/libhelper.la
+include $(top_srcdir)/common.mk
 
-%C%_libhelper_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBUSB1_CFLAGS)
+METASOURCES = AUTO
+noinst_LTLIBRARIES = libhelper.la
 
-%C%_libhelper_la_SOURCES = \
-	%D%/binarybuffer.c \
-	%D%/options.c \
-	%D%/time_support_common.c \
-	%D%/configuration.c \
-	%D%/log.c \
-	%D%/command.c \
-	%D%/time_support.c \
-	%D%/replacements.c \
-	%D%/fileio.c \
-	%D%/util.c \
-	%D%/jep106.c \
-	%D%/jim-nvp.c \
-	%D%/binarybuffer.h \
-	%D%/configuration.h \
-	%D%/ioutil.h \
-	%D%/list.h \
-	%D%/util.h \
-	%D%/types.h \
-	%D%/log.h \
-	%D%/command.h \
-	%D%/time_support.h \
-	%D%/replacements.h \
-	%D%/fileio.h \
-	%D%/system.h \
-	%D%/jep106.h \
-	%D%/jep106.inc \
-	%D%/jim-nvp.h
+CONFIGFILES = options.c time_support_common.c
+
+libhelper_la_CPPFLAGS = $(AM_CPPFLAGS) $(LIBUSB1_CFLAGS)
+
+libhelper_la_SOURCES = \
+	binarybuffer.c \
+	$(CONFIGFILES) \
+	configuration.c \
+	log.c \
+	command.c \
+	time_support.c \
+	replacements.c \
+	fileio.c \
+	util.c \
+	jim-nvp.c
 
 if IOUTIL
-%C%_libhelper_la_SOURCES += %D%/ioutil.c
+libhelper_la_SOURCES += ioutil.c
 else
-%C%_libhelper_la_SOURCES += %D%/ioutil_stubs.c
+libhelper_la_SOURCES += ioutil_stubs.c
 endif
 
-%C%_libhelper_la_CFLAGS = $(AM_CFLAGS)
+libhelper_la_CFLAGS =
 if IS_MINGW
 # FD_* macros are sloppy with their signs on MinGW32 platform
-%C%_libhelper_la_CFLAGS += -Wno-sign-compare
+libhelper_la_CFLAGS += -Wno-sign-compare
 endif
 
-STARTUP_TCL_SRCS += %D%/startup.tcl
-EXTRA_DIST += \
-	%D%/bin2char.sh \
-	%D%/update_jep106.pl
+noinst_HEADERS = \
+	binarybuffer.h \
+	configuration.h \
+	ioutil.h \
+	list.h \
+	util.h \
+	types.h \
+	log.h \
+	command.h \
+	time_support.h \
+	replacements.h \
+	fileio.h \
+	system.h \
+	bin2char.c \
+	jim-nvp.h
+
+EXTRA_DIST = startup.tcl
+
+BIN2C = bin2char$(EXEEXT_FOR_BUILD)
+
+BUILT_SOURCES = $(BIN2C)
+
+$(BIN2C): bin2char.c
+	${CC_FOR_BUILD} ${CFLAGS_FOR_BUILD} $(srcdir)/bin2char.c -o $@
+
+CLEANFILES = bin2char$(EXEEXT_FOR_BUILD)
+
+MAINTAINERCLEANFILES = $(srcdir)/Makefile.in

@@ -16,13 +16,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_JTAG_HLA_HLA_LAYOUT_H
-#define OPENOCD_JTAG_HLA_HLA_LAYOUT_H
-
-#include <target/armv7m_trace.h>
+#ifndef _HL_LAYOUT_H
+#define _HL_LAYOUT_H
 
 /** */
 struct hl_interface_s;
@@ -74,38 +74,7 @@ struct hl_layout_api_s {
 	 */
 	int (*idcode) (void *handle, uint32_t *idcode);
 	/** */
-	int (*override_target) (const char *targetname);
-	/** */
-	int (*custom_command) (void *handle, const char *command);
-	/** */
-	int (*speed)(void *handle, int khz, bool query);
-	/**
-	 * Configure trace parameters for the adapter
-	 *
-	 * @param handle A handle to adapter
-	 * @param enabled Whether to enable trace
-	 * @param pin_protocol Configured pin protocol
-	 * @param port_size Trace port width for sync mode
-	 * @param trace_freq A pointer to the configured trace
-	 * frequency; if it points to 0, the adapter driver must write
-	 * its maximum supported rate there
-	 * @returns ERROR_OK on success, an error code on failure.
-	 */
-	int (*config_trace)(void *handle, bool enabled, enum tpio_pin_protocol pin_protocol,
-			    uint32_t port_size, unsigned int *trace_freq);
-	/**
-	 * Poll for new trace data
-	 *
-	 * @param handle A handle to adapter
-	 * @param buf A pointer to buffer to store received data
-	 * @param size A pointer to buffer size; must be filled with
-	 * the actual amount of bytes written
-	 *
-	 * @returns ERROR_OK on success, an error code on failure.
-	 */
-	int (*poll_trace)(void *handle, uint8_t *buf, size_t *size);
-	/** */
-	enum target_state (*state) (void *fd);
+	enum target_state (*state) (void *handle);
 };
 
 /** */
@@ -125,4 +94,4 @@ const struct hl_layout *hl_layout_get_list(void);
 /** */
 int hl_layout_init(struct hl_interface_s *adapter);
 
-#endif /* OPENOCD_JTAG_HLA_HLA_LAYOUT_H */
+#endif /* _HL_LAYOUT_H */

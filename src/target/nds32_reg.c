@@ -13,7 +13,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -24,7 +26,7 @@
 
 static bool nds32_reg_init_done;
 static struct nds32_reg_s nds32_regs[TOTAL_REG_NUM];
-static const struct nds32_reg_exception_s nds32_ex_reg_values[] = {
+static struct nds32_reg_exception_s nds32_ex_reg_values[] = {
 	{IR0, 3, 0x3, 2},
 	{IR0, 3, 0x3, 3},
 	{IR1, 3, 0x3, 2},
@@ -356,7 +358,7 @@ const char *nds32_reg_symbolic_name(uint32_t number)
 bool nds32_reg_exception(uint32_t number, uint32_t value)
 {
 	int i;
-	const struct nds32_reg_exception_s *ex_reg_value;
+	struct nds32_reg_exception_s *ex_reg_value;
 	uint32_t field_value;
 
 	i = 0;

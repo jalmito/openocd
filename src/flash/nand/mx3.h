@@ -14,11 +14,10 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
-
-#ifndef OPENOCD_FLASH_NAND_MX3_H
-#define OPENOCD_FLASH_NAND_MX3_H
 
 /*
  * Freescale iMX3* OpenOCD NAND Flash controller support.
@@ -108,5 +107,3 @@ struct mx3_nf_controller {
 	enum mx_nf_finalize_action fin;
 	struct mx3_nf_flags flags;
 };
-
-#endif /* OPENOCD_FLASH_NAND_MX3_H */

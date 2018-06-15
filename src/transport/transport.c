@@ -12,7 +12,8 @@
  * GNU General Public License for more details.
 
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -238,13 +239,12 @@ COMMAND_HANDLER(handle_transport_init)
 {
 	LOG_DEBUG("%s", __func__);
 	if (!session) {
-		LOG_ERROR("session transport was not selected. Use 'transport select <transport>'");
+		LOG_ERROR("session's transport is not selected.");
 
 		/* no session transport configured, print transports then fail */
-		LOG_ERROR("Transports available:");
 		const char * const *vector = allowed_transports;
 		while (*vector) {
-			LOG_ERROR("%s", *vector);
+			LOG_ERROR("allow transport '%s'", *vector);
 			vector++;
 		}
 		return ERROR_FAIL;
@@ -274,33 +274,21 @@ COMMAND_HANDLER(handle_transport_list)
  */
 static int jim_transport_select(Jim_Interp *interp, int argc, Jim_Obj * const *argv)
 {
-	int res;
 	switch (argc) {
-		case 1:	/* autoselect if necessary, then return/display current config */
+		case 1:		/* return/display */
 			if (!session) {
-				if (!allowed_transports) {
-					LOG_ERROR("Debug adapter does not support any transports? Check config file order.");
-					return JIM_ERR;
-				}
-				LOG_INFO("auto-selecting first available session transport \"%s\". "
-					 "To override use 'transport select <transport>'.", allowed_transports[0]);
-				res = transport_select(global_cmd_ctx, allowed_transports[0]);
-				if (res != JIM_OK)
-					return res;
+				LOG_ERROR("session's transport is not selected.");
+				return JIM_ERR;
+			} else {
+				Jim_SetResultString(interp, session->name, -1);
+				return JIM_OK;
 			}
-			Jim_SetResultString(interp, session->name, -1);
-			return JIM_OK;
 			break;
-		case 2:	/* assign */
+		case 2:		/* assign */
 			if (session) {
-				if (!strcmp(session->name, argv[1]->bytes)) {
-					LOG_WARNING("Transport \"%s\" was already selected", session->name);
-					Jim_SetResultString(interp, session->name, -1);
-					return JIM_OK;
-				} else {
-					LOG_ERROR("Can't change session's transport after the initial selection was made");
-					return JIM_ERR;
-				}
+				/* can't change session's transport after-the-fact */
+				LOG_ERROR("session's transport is already selected.");
+				return JIM_ERR;
 			}
 
 			/* Is this transport supported by our debug adapter?
@@ -316,13 +304,8 @@ static int jim_transport_select(Jim_Interp *interp, int argc, Jim_Obj * const *a
 
 			for (unsigned i = 0; allowed_transports[i]; i++) {
 
-				if (strcmp(allowed_transports[i], argv[1]->bytes) == 0) {
-					if (transport_select(global_cmd_ctx, argv[1]->bytes) == ERROR_OK) {
-						Jim_SetResultString(interp, session->name, -1);
-						return JIM_OK;
-					}
-					return JIM_ERR;
-				}
+				if (strcmp(allowed_transports[i], argv[1]->bytes) == 0)
+					return transport_select(global_cmd_ctx, argv[1]->bytes);
 			}
 
 			LOG_ERROR("Debug adapter doesn't support '%s' transport", argv[1]->bytes);

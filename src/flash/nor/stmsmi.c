@@ -12,7 +12,9 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
 /* STM Serial Memory Interface (SMI) controller is a SPI bus controller
@@ -160,7 +162,7 @@ FLASH_BANK_COMMAND_HANDLER(stmsmi_flash_bank_command)
 /* timeout in ms */
 static int poll_tff(struct target *target, uint32_t io_base, int timeout)
 {
-	int64_t endtime;
+	long long endtime;
 
 	if (SMI_READ_REG(SMI_SR) & SMI_TFF)
 		return ERROR_OK;
@@ -211,7 +213,7 @@ static int wait_till_ready(struct flash_bank *bank, int timeout)
 {
 	uint32_t status;
 	int retval;
-	int64_t endtime;
+	long long endtime;
 
 	endtime = timeval_ms() + timeout;
 	do {

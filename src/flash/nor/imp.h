@@ -12,11 +12,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_FLASH_NOR_IMP_H
-#define OPENOCD_FLASH_NOR_IMP_H
+#ifndef FLASH_NOR_IMP_H
+#define FLASH_NOR_IMP_H
 
 /* this is an internal header */
 #include "core.h"
@@ -46,4 +48,4 @@ int flash_driver_read(struct flash_bank *bank,
 int flash_write_unlock(struct target *target, struct image *image,
 		uint32_t *written, int erase, bool unlock);
 
-#endif /* OPENOCD_FLASH_NOR_IMP_H */
+#endif /* FLASH_NOR_IMP_H */

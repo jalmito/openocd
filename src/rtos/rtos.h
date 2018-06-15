@@ -13,11 +13,13 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.           *
  ***************************************************************************/
 
-#ifndef OPENOCD_RTOS_RTOS_H
-#define OPENOCD_RTOS_RTOS_H
+#ifndef RTOS_H
+#define RTOS_H
 
 #include "server/server.h"
 #include <jim-nvp.h>
@@ -31,14 +33,15 @@ struct reg;
  * Table should be terminated by an element with NULL in symbol_name
  */
 typedef struct symbol_table_elem_struct {
-	const char *symbol_name;
+	char *symbol_name;
 	symbol_address_t address;
-	bool optional;
+
 } symbol_table_elem_t;
 
 struct thread_detail {
 	threadid_t threadid;
 	bool exists;
+	char *display_str;
 	char *thread_name_str;
 	char *extra_info_str;
 };
@@ -58,7 +61,7 @@ struct rtos {
 };
 
 struct rtos_type {
-	const char *name;
+	char *name;
 	int (*detect_rtos)(struct target *target);
 	int (*create)(struct target *target);
 	int (*smp_init)(struct target *target);
@@ -80,15 +83,7 @@ struct rtos_register_stacking {
 	unsigned char stack_registers_size;
 	signed char stack_growth_direction;
 	unsigned char num_output_registers;
-	/* Some targets require evaluating the stack to determine the
-	 * actual stack pointer for a process.  If this field is NULL,
-	 * just use stacking->stack_registers_size * stack_growth_direction
-	 * to calculate adjustment.
-	 */
-	int64_t (*calculate_process_stack)(struct target *target,
-		const uint8_t *stack_data,
-		const struct rtos_register_stacking *stacking,
-		int64_t stack_ptr);
+	unsigned char stack_alignment;
 	const struct stack_register_offset *register_offsets;
 };
 
@@ -108,4 +103,4 @@ int rtos_smp_init(struct target *target);
 /*  function for handling symbol access */
 int rtos_qsymbol(struct connection *connection, char const *packet, int packet_size);
 
-#endif /* OPENOCD_RTOS_RTOS_H */
+#endif	/* RTOS_H */
